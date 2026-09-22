@@ -1,0 +1,148 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  name         String?
+  passwordHash String
+  createdAt    DateTime  @default(now())
+  wedding      Wedding?
+}
+
+model Wedding {
+  id        String  @id @default(cuid())
+  userId    String  @unique
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dataVersion Int   @default(1)
+
+  weddingDate  String @default("2027-06-20")
+  akadTime     String @default("08:00 WIB")
+  resepsiTime  String @default("11:00 - 14:00 WIB")
+  weddingVenue String @default("")
+  weddingTheme String @default("")
+  totalBudget  Int    @default(0)
+
+  brideSides BrideSide[]
+
+  budgetItems      BudgetItem[]
+  seserahanItems   SeserahanItem[]
+  vendors          Vendor[]
+  adminDocs        AdminDoc[]
+  guests           Guest[]
+  checklistItems   ChecklistItem[]
+  rundownItems     RundownItem[]
+  committeeMembers CommitteeMember[]
+}
+
+model BrideSide {
+  id         String   @id @default(cuid())
+  weddingId  String
+  wedding    Wedding  @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  side       String
+  fullName   String   @default("")
+  nickname   String   @default("")
+  father     String   @default("")
+  mother     String   @default("")
+  phone      String   @default("")
+  address    String   @default("")
+
+  @@unique([weddingId, side])
+}
+
+model BudgetItem {
+  id         String   @id
+  weddingId  String
+  wedding    Wedding  @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  category   String
+  item       String
+  estimated  Int      @default(0)
+  actual     Int      @default(0)
+  status     String   @default("Belum")
+  sortOrder  Int      @default(0)
+}
+
+model SeserahanItem {
+  id         String   @id
+  weddingId  String
+  wedding    Wedding  @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  section    String
+  title      String
+  cost       Int      @default(0)
+  ready      Boolean  @default(false)
+  link       String   @default("")
+  sortOrder  Int      @default(0)
+}
+
+model Vendor {
+  id         String   @id
+  weddingId  String
+  wedding    Wedding  @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  category   String
+  name       String
+  price      Int      @default(0)
+  status     String   @default("Survey / Pitching")
+  contact    String   @default("")
+  notes      String   @default("")
+  sortOrder  Int      @default(0)
+}
+
+model AdminDoc {
+  id          String   @id
+  weddingId   String
+  wedding     Wedding  @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  title       String
+  description String   @default("")
+  completed   Boolean  @default(false)
+  sortOrder   Int      @default(0)
+}
+
+model Guest {
+  id         String   @id
+  weddingId  String
+  wedding    Wedding  @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  name       String
+  side       String
+  category   String
+  pax        Int      @default(1)
+  sent       Boolean  @default(false)
+  status     String   @default("Belum Konfirmasi")
+  isVip      Boolean  @default(false)
+  sortOrder  Int      @default(0)
+}
+
+model ChecklistItem {
+  id         String   @id
+  weddingId  String
+  wedding    Wedding  @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  timeframe  String
+  task       String
+  done       Boolean  @default(false)
+  sortOrder  Int      @default(0)
+}
+
+model RundownItem {
+  id         String   @id
+  weddingId  String
+  wedding    Wedding  @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  time       String
+  activity   String
+  pic        String
+  sortOrder  Int      @default(0)
+}
+
+model CommitteeMember {
+  id            String   @id
+  weddingId     String
+  wedding       Wedding  @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  role          String
+  name          String
+  uniformGiven  Boolean  @default(false)
+  sortOrder     Int      @default(0)
+}
