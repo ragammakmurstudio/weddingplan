@@ -18,6 +18,7 @@ const cormorant = Cormorant_Garamond({
 export const metadata: Metadata = {
   title: "NikahPlan - Planner Pernikahan Impian",
   description: "Kelola seluruh keperluan nikah dalam satu portal",
+  icons: { icon: "/logo_rmt.svg" },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

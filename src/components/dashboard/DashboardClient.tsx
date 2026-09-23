@@ -12,6 +12,7 @@ import type {
 } from "@/lib/types";
 import { formatDate, formatRupiah, getVendorBadgeClass, newId } from "@/lib/utils";
 import { logoutAction, resetWeddingAction, saveWeddingAction } from "@/actions/auth";
+import { BrandCredit } from "@/components/BrandCredit";
 
 const TABS: { id: TabId; name: string; icon: string }[] = [
   { id: "dashboard", name: "Dashboard Overview", icon: "fa-solid fa-chart-pie" },
@@ -279,9 +280,11 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
             >
               <i className="fa-solid fa-bars text-lg" />
             </button>
-            <div className="w-10 h-10 rounded-full bg-rose-100 flex items-center justify-center text-rose-600 font-serif text-xl font-bold border border-rose-200 shrink-0">
-              <i className="fa-solid fa-heart" />
-            </div>
+            <img
+              src="/logo_rmt.svg"
+              alt="NikahPlan"
+              className="w-10 shrink-0 h-auto"
+            />
             <div className="min-w-0">
               <h1 className="font-cormorant text-2xl font-bold text-slate-800 leading-tight truncate">
                 {state.brideData.cpp.nickname || "Pengantin Pria"} &{" "}
@@ -1680,6 +1683,10 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
           )}
         </main>
       </div>
+
+      <footer className="border-t border-slate-100 bg-white py-5 mt-auto">
+        <BrandCredit />
+      </footer>
 
       <Modal
         open={showBudgetModal}
