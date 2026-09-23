@@ -55,7 +55,7 @@ npm run typecheck  # tsc --noEmit
 - Register / login / logout (Auth.js + bcrypt)
 - Proteksi `/dashboard` tanpa session → redirect `/login`
 - 9 tab: Dashboard, Mempelai, Budget, Seserahan, Vendor, Administrasi KUA, Undangan, Timeline, Rundown
-- Export / import JSON, reset data demo
+- Reset data demo (dengan popup konfirmasi)
 - Toast notifikasi, auto-save indicator (Tersimpan / Menyimpan...)
 - **Backfill data default** (sesuai HTML base) untuk mahar, vendor, KUA, timeline, rundown — kalau list kosong, diisi otomatis saat dashboard dibuka
 - **Placeholder input** di modal & rundown/panitia (contoh data dari HTML base)

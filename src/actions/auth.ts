@@ -543,7 +543,7 @@ export async function saveWeddingAction(input: WeddingState): Promise<SaveResult
   }
 }
 
-export async function resetWeddingAction(): Promise<void> {
+export async function resetWeddingAction(): Promise<WeddingState | null> {
   const userId = await requireUserId();
   const { data: existing, error: findErr } = await db()
     .from("Wedding")
@@ -551,7 +551,7 @@ export async function resetWeddingAction(): Promise<void> {
     .eq("userId", userId)
     .maybeSingle();
   if (findErr) throw new Error(findErr.message);
-  if (!existing) return;
+  if (!existing) return null;
 
   const { error: delErr } = await db()
     .from("Wedding")
@@ -560,6 +560,7 @@ export async function resetWeddingAction(): Promise<void> {
   if (delErr) throw new Error(delErr.message);
   await createWeddingWithSeed(userId);
   revalidatePath("/dashboard");
+  return getWeddingForUser();
 }
 
 export async function getWeddingForUser(): Promise<WeddingState | null> {

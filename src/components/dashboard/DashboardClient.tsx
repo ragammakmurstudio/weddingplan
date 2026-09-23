@@ -96,6 +96,7 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
   const [showVendorModal, setShowVendorModal] = useState(false);
   const [showTimelineModal, setShowTimelineModal] = useState(false);
   const [showSeserahanModal, setShowSeserahanModal] = useState(false);
+  const [showResetModal, setShowResetModal] = useState(false);
   const [navOpen, setNavOpen] = useState(false);
 
   const [budgetForm, setBudgetForm] = useState<BudgetItem>({
@@ -232,39 +233,20 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
     {} as Record<string, ChecklistItem[]>
   );
 
-  const exportData = () => {
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state));
-    const a = document.createElement("a");
-    a.setAttribute("href", dataStr);
-    a.setAttribute("download", `NikahPlan_Backup_${new Date().toISOString().slice(0, 10)}.json`);
-    a.click();
-    showToast("Backup data berhasil di-download!");
-  };
-
-  const importData = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const parsed = JSON.parse(String(e.target?.result)) as WeddingState;
-        setState(parsed);
-        if (saveTimer.current) clearTimeout(saveTimer.current);
-        void persist(parsed, false);
-        showToast("Data berhasil di-import!");
-      } catch {
-        showToast("Gagal mengimport file JSON.");
-      }
-    };
-    reader.readAsText(file);
-    event.target.value = "";
-  };
-
   const resetData = async () => {
-    if (!confirm("Apakah Anda yakin ingin mereset seluruh data kembali ke setelan standar demo?")) {
-      return;
+    if (saveTimer.current) clearTimeout(saveTimer.current);
+    try {
+      const fresh = await resetWeddingAction();
+      setShowResetModal(false);
+      if (fresh) {
+        setState(fresh);
+        showToast("Data berhasil direset ke setelan demo!");
+      } else {
+        showToast("Data pernikahan tidak ditemukan.");
+      }
+    } catch {
+      showToast("Gagal mereset data. Coba lagi.");
     }
-    await resetWeddingAction();
   };
 
   return (
@@ -318,26 +300,7 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
               {userName || userEmail}
             </span>
             <button
-              onClick={exportData}
-              title="Export Backup Data"
-              className="p-2 text-slate-600 hover:text-rose-600 hover:bg-rose-50 rounded-lg text-sm transition"
-            >
-              <i className="fa-solid fa-download" />
-            </button>
-            <label
-              title="Import Data"
-              className="p-2 text-slate-600 hover:text-rose-600 hover:bg-rose-50 rounded-lg text-sm cursor-pointer transition"
-            >
-              <i className="fa-solid fa-upload" />
-              <input
-                type="file"
-                onChange={importData}
-                className="hidden"
-                accept=".json"
-              />
-            </label>
-            <button
-              onClick={resetData}
+              onClick={() => setShowResetModal(true)}
               title="Reset Data Demo"
               className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg text-sm transition"
             >
@@ -2150,6 +2113,33 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
             <label className="font-medium text-slate-700">Sudah Siap / Dikirim</label>
           </div>
         </div>
+      </Modal>
+
+      <Modal
+        open={showResetModal}
+        title="Reset Data ke Setelan Demo?"
+        footer={
+          <>
+            <button
+              onClick={() => setShowResetModal(false)}
+              className="px-4 py-2 text-xs font-semibold text-slate-500 hover:bg-slate-100 rounded-xl"
+            >
+              Batal
+            </button>
+            <button
+              onClick={() => void resetData()}
+              className="px-4 py-2 text-xs font-semibold bg-red-600 text-white rounded-xl hover:bg-red-700"
+            >
+              Ya, Reset Data
+            </button>
+          </>
+        }
+      >
+        <p className="text-xs text-slate-500 leading-relaxed">
+          Seluruh data pernikahan (budget, mempelai, tamu, vendor, checklist, rundown, dll.)
+          akan dihapus dan diganti kembali dengan data demo standar. Tindakan ini tidak bisa
+          dibatalkan.
+        </p>
       </Modal>
 
       {toastMsg && (
