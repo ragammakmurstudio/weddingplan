@@ -679,10 +679,6 @@ export async function getWeddingForUser(): Promise<WeddingState | null> {
     state.seserahanCpwToCpp = seed.seserahanCpwToCpp;
     needsBackfill = true;
   }
-  if (state.vendors.length === 0) {
-    state.vendors = seed.vendors;
-    needsBackfill = true;
-  }
   if (state.adminDocs.length === 0) {
     state.adminDocs = seed.adminDocs;
     needsBackfill = true;
