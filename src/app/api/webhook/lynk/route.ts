@@ -7,31 +7,51 @@ function asString(value: unknown): string {
   return String(value);
 }
 
+// Bentuk asli lynk.id bertingkat (event → data → message_data).
+// Fallback top-level disimpan kalau suatu saat lynk.id mengubah kontrak.
+type LynkPayload = {
+  event?: string;
+  data?: {
+    message_action?: string;
+    message_id?: string;
+    message_data?: {
+      refId?: string;
+      customer?: { email?: string | null };
+      totals?: { grandTotal?: number | string };
+    };
+  };
+  refId?: string;
+  amount?: string | number;
+  grandTotal?: string | number;
+  message_id?: string;
+  email?: string;
+};
+
 export async function POST(req: Request): Promise<Response> {
   const raw = await req.text();
 
-  let payload: Record<string, unknown>;
+  let payload: LynkPayload;
   try {
-    payload = JSON.parse(raw) as Record<string, unknown>;
+    payload = JSON.parse(raw) as LynkPayload;
   } catch {
     return new Response("Invalid JSON", { status: 400 });
   }
 
-  const refId = asString(payload.refId ?? payload.ref_id);
+  const md = payload.data?.message_data;
+  const refId = asString(md?.refId ?? payload.refId);
   const amount = asString(
-    payload.amount ?? payload.grandTotal ?? payload.grand_total
+    md?.totals?.grandTotal ?? payload.amount ?? payload.grandTotal
   );
-  const messageId = asString(payload.message_id ?? payload.messageId);
-  const email = asString(
-    payload.email ?? payload.customerEmail ?? payload.buyerEmail
-  )
+  const messageId = asString(payload.data?.message_id ?? payload.message_id);
+  const email = asString(md?.customer?.email ?? payload.email)
     .trim()
     .toLowerCase();
+  const event = asString(payload.event);
+  const action = asString(payload.data?.message_action);
 
-  // Log payload mentah — dipakai untuk verifikasi field lynk.id (mis. email)
   console.log(
     "[lynk-webhook] terima:",
-    JSON.stringify({ refId, amount, messageId, email, payload })
+    JSON.stringify({ event, action, refId, amount, messageId, email })
   );
 
   const secret = process.env.LYNK_MERCHANT_KEY;
@@ -40,6 +60,10 @@ export async function POST(req: Request): Promise<Response> {
     return new Response("Webhook not configured", { status: 500 });
   }
   if (!refId || !amount || !messageId) {
+    console.warn(
+      "[lynk-webhook] field kosong:",
+      JSON.stringify({ refId, amount, messageId })
+    );
     return new Response("Missing fields", { status: 400 });
   }
 
@@ -49,12 +73,25 @@ export async function POST(req: Request): Promise<Response> {
   const received = asString(req.headers.get("x-lynk-signature")).trim();
   const expectedBuf = Buffer.from(expected, "utf8");
   const receivedBuf = Buffer.from(received, "utf8");
-  if (
-    expectedBuf.length !== receivedBuf.length ||
-    !timingSafeEqual(expectedBuf, receivedBuf)
-  ) {
-    console.warn("[lynk-webhook] signature tidak cocok");
+  const sigOk =
+    expectedBuf.length === receivedBuf.length &&
+    timingSafeEqual(expectedBuf, receivedBuf);
+  console.log(
+    "[lynk-webhook] signature:",
+    sigOk ? "cocok" : "TIDAK cocok",
+    `amount="${amount}"`
+  );
+  if (!sigOk) {
     return new Response("Invalid signature", { status: 401 });
+  }
+
+  if (event && event !== "payment.received") {
+    console.log("[lynk-webhook] event diabaikan:", event);
+    return Response.json({ ok: true, ignored: event });
+  }
+  if (action && action !== "SUCCESS") {
+    console.log("[lynk-webhook] message_action diabaikan:", action);
+    return Response.json({ ok: true, ignored: action });
   }
 
   const { error } = await db().from("Purchase").upsert(
@@ -72,5 +109,10 @@ export async function POST(req: Request): Promise<Response> {
     return new Response("DB error", { status: 500 });
   }
 
+  console.log(
+    "[lynk-webhook] tersimpan:",
+    messageId,
+    email || "(tanpa email)"
+  );
   return Response.json({ ok: true });
 }
