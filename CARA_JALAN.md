@@ -34,7 +34,10 @@ npm run typecheck  # tsc --noEmit
 | `src/components/dashboard/DashboardClient.tsx` | Seluruh UI dashboard (9 tab) |
 | `src/lib/seed-data.ts` | Data demo saat register |
 | `src/app/api/webhook/lynk/route.ts` | Webhook lynk.id → insert `Purchase` |
-| `scripts/purchases.mjs` | `--add` / `--list` entitlement akses |
+| `scripts/purchases.mjs` | `--add` / `--list` / `--list-users` / `--make-admin` |
+| `src/app/admin/page.tsx` | Admin panel (wajib role=admin) |
+| `src/components/admin/AdminPanel.tsx` | Chart Recharts + kelola user & pembelian |
+| `src/actions/password.ts` | Alur lupa/reset password via email link |
 
 ## Catatan
 
@@ -72,6 +75,32 @@ Alur: pembeli bayar di lynk.id → webhook mencatat pembelian di tabel `Purchase
 - Signature invalid → cocokkan `amount`/`refId`/`message_id` dari log dengan `LYNK_MERCHANT_KEY`.
 - Log payload tidak memuat `email` → sementara pakai `--add` manual untuk pembeli terdampak; kembangkan klaim via `refId` struk email lynk.id.
 
+## Admin Panel & Reset Password
+
+### Setup sekali
+1. Supabase SQL Editor → paste `supabase_migration.sql` lagi → Run (kolom `role` + tabel `PasswordResetToken` ditambah di bawah file).
+2. Set role admin (ganti dengan email kamu):
+   ```bash
+   node scripts/purchases.mjs --make-admin ragammakmurstudio@gmail.com
+   ```
+3. Buat **Gmail App Password**: Google Account → Security → 2-Step Verification (aktifkan) → App passwords → buat nama `nikahplan` → salin 16 karakter.
+4. Set env di `.env` **dan** Vercel → redeploy:
+   - `APP_URL` = `https://weddingplan-livid.vercel.app`
+   - `SMTP_HOST` = `smtp.gmail.com`, `SMTP_PORT` = `587`
+   - `SMTP_USER` = `ragammakmurstudio@gmail.com`
+   - `SMTP_PASS` = App Password dari langkah 3
+   - `SMTP_FROM` = `NikahPlan <ragammakmurstudio@gmail.com>`
+
+### Pakai
+- Buka `/admin` (login pakai akun admin; non-admin otomatis dilempar ke `/dashboard`).
+- Chart: pie status pembelian, bar user baru/minggu, line kumulatif30 hari.
+- Kelola user: **Kirim link reset** (email ke user), **Reset PW** (admin ketik password baru), **Hapus** (permanen, data wedding ikut terhapus).
+- Kelola akses: **+ Tambah Akses** (grant manual), **Revoke** (cabut entitlement yang belum terpakai).
+- User lupa password: halaman `/lupa-password` (link ada di `/login`) → email link → `/reset-password?token=...` → password baru (berlaku30 menit, sekali pakai).
+
+### Operasional
+- Cek semua user: `node scripts/purchases.mjs --list-users`
+
 ## Fitur Sudah Ada
 
 - Register (wajib punya pembelian di lynk.id) / login / logout (Auth.js + bcrypt)
@@ -85,7 +114,8 @@ Alur: pembeli bayar di lynk.id → webhook mencatat pembelian di tabel `Purchase
 
 ## Belum / Ide Phase 2
 
-- Verifikasi email, lupa password
-- Google OAuth
+- Verifikasi email, Google OAuth
+- Disable flag akun (non-aktifkan tanpa hapus)
 - Workspace / role (multi-anggota)
 - Klaim otomatis via `refId` kalau payload webhook lynk.id tidak memuat email
+- Log viewer webhook lynk.id di admin panel

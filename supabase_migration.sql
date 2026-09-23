@@ -171,3 +171,20 @@ create table if not exists "Purchase" (
   "createdAt"  timestamptz not null default now()
 );
 create index if not exists "Purchase_email_idx" on "Purchase" ("email");
+
+-- ---------- Role admin ----------
+-- Default 'user'; set email owner jadi 'admin' via:
+--   node scripts/purchases.mjs --make-admin email@kamu.com
+alter table "User" add column if not exists "role" text not null default 'user';
+
+-- ---------- Token reset password (link via email,30 menit, sekali pakai) ----------
+create table if not exists "PasswordResetToken" (
+  "id"        text primary key,
+  "userId"    text not null references "User" ("id") on delete cascade,
+  "tokenHash" text not null,
+  "expiresAt" timestamptz not null,
+  "usedAt"    timestamptz,
+  "createdAt" timestamptz not null default now()
+);
+create index if not exists "PasswordResetToken_userId_idx" on "PasswordResetToken" ("userId");
+alter table "PasswordResetToken" enable row level security;

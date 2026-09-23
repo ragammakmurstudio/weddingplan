@@ -33,18 +33,29 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const valid = await compare(parsed.data.password, user.passwordHash);
         if (!valid) return null;
 
-        return { id: user.id, email: user.email, name: user.name };
+        return {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          role: user.role ?? "user",
+        };
       },
     }),
   ],
   callbacks: {
     jwt({ token, user }) {
-      if (user) token.id = user.id;
+      if (user) {
+        token.id = user.id;
+        token.role = user.role ?? "user";
+      }
       return token;
     },
     session({ session, token }) {
       if (token.id && session.user) {
         session.user.id = token.id as string;
+      }
+      if (session.user && token.role) {
+        session.user.role = token.role as string;
       }
       return session;
     },

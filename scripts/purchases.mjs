@@ -4,6 +4,8 @@
  *
  *   node scripts/purchases.mjs --add pembeli@example.com "catatan"
  *   node scripts/purchases.mjs --list
+ *   node scripts/purchases.mjs --list-users
+ *   node scripts/purchases.mjs --make-admin owner@example.com
  */
 import { createClient } from "@supabase/supabase-js";
 import { randomUUID } from "node:crypto";
@@ -89,13 +91,58 @@ async function list() {
   }
 }
 
+async function listUsers() {
+  const { data, error } = await sb
+    .from("User")
+    .select("email, name, role, createdAt")
+    .order("createdAt", { ascending: false });
+  if (error) {
+    console.error("Gagal membaca user:", error.message);
+    process.exit(1);
+  }
+  if (!data?.length) {
+    console.log("Belum ada user.");
+    return;
+  }
+  for (const u of data) {
+    const when = new Date(u.createdAt).toLocaleString("id-ID");
+    console.log(
+      `${(u.email ?? "-").padEnd(28)} | ${(u.role ?? "-").padEnd(5)} | ${(u.name ?? "-").padEnd(16)} | ${when}`
+    );
+  }
+}
+
+async function makeAdmin(email) {
+  const norm = String(email).trim().toLowerCase();
+  const { data, error } = await sb
+    .from("User")
+    .update({ role: "admin" })
+    .eq("email", norm)
+    .select("email, role");
+  if (error) {
+    console.error("Gagal set role:", error.message);
+    process.exit(1);
+  }
+  if (!data?.length) {
+    console.error(`User ${norm} tidak ditemukan — daftar dulu dengan email itu.`);
+    process.exit(1);
+  }
+  console.log(`OK — ${norm} sekarang role=admin. Login ulang supaya session ter-update.`);
+}
+
 if (args[0] === "--add" && args[1]) {
   await add(args[1], args[2]);
 } else if (args[0] === "--list") {
   await list();
+} else if (args[0] === "--list-users") {
+  await listUsers();
+} else if (args[0] === "--make-admin" && args[1]) {
+  await makeAdmin(args[1]);
 } else {
   console.log("Pemakaian:");
   console.log('  node scripts/purchases.mjs --add pembeli@example.com "catatan"');
   console.log("  node scripts/purchases.mjs --list");
+  console.log("  node scripts/purchases.mjs --list-users");
+  console.log("  node scripts/purchases.mjs --make-admin owner@example.com");
   process.exit(1);
 }

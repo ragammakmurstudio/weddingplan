@@ -56,6 +56,16 @@ export default function LoginPage() {
           </p>
         )}
 
+        <div className="flex items-center justify-between">
+          <span className="text-xs text-slate-400">&nbsp;</span>
+          <Link
+            href="/lupa-password"
+            className="text-xs text-slate-400 hover:text-rose-600"
+          >
+            Lupa password?
+          </Link>
+        </div>
+
         <button
           type="submit"
           disabled={pending}
