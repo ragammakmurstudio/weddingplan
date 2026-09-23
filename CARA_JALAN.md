@@ -11,18 +11,17 @@ npm run dev
 ### Script lain
 
 ```bash
-npm run build      # prisma generate + next build (produksi)
+npm run build      # next build (produksi)
 npm run start      # jalankan build produksi
 npm run lint       # eslint
 npm run typecheck  # tsc --noEmit
-npm run db:push    # sinkronkan schema Prisma ke database
 ```
 
 ## Setup Awal
 
-1. Copy `.env.example` → `.env` (sudah ada `.env` untuk dev).
-2. Isi `AUTH_SECRET` dengan string acak di produksi.
-3. `npm install` lalu `npm run db:push`.
+1. Supabase → **SQL Editor** → paste `supabase_migration.sql` → **Run** (sekali saja, bikin semua tabel).
+2. Copy `.env.example` → `.env`, isi `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` (Settings → API) + `AUTH_SECRET`.
+3. `npm install` lalu `npm run dev`.
 
 ## Struktur Penting
 
@@ -31,38 +30,25 @@ npm run db:push    # sinkronkan schema Prisma ke database
 | `src/auth.ts` | Konfigurasi Auth.js (credentials + JWT) |
 | `src/proxy.ts` | Proteksi route (`/dashboard` wajib login) |
 | `src/actions/auth.ts` | Register, login, logout, save/reset wedding |
-| `prisma/schema.prisma` | Skema DB: User, Wedding, Budget, Guest, dll. |
+| `supabase_migration.sql` | Skema DB — paste ke Supabase SQL Editor, Run |
 | `src/components/dashboard/DashboardClient.tsx` | Seluruh UI dashboard (9 tab) |
 | `src/lib/seed-data.ts` | Data demo saat register |
 
 ## Catatan
 
-- **Stack**: Next.js 16 + React + Tailwind + Auth.js (next-auth beta) + Prisma 6 + SQLite.
+- **Stack**: Next.js 16 + React + Tailwind + Auth.js (next-auth beta) + Supabase (PostgreSQL, via `@supabase/supabase-js`).
 - **Multi-tenant**: 1 akun = 1 data wedding. Data di-bawah `userId`, query selalu di-guard session.
 - **Auto-save**: edit di UI → debounce ~700ms → `saveWeddingAction` (Server Actions + Zod validation).
 - **File HTML lama** (`sistem_manajemen_wedding_planner.html`) tetap di root sebagai referensi visual.
-- **Prisma**: sengaja pakai v6 (stable) — v8 RC CLI-nya beda, dokumentasi sedikit.
+- **Supabase**: akses DB server-side pakai `service_role` key (`src/lib/supabase.ts`); RLS aktif tanpa policy — key anon publik tidak bisa akses tabel.
 - **UI**: di-port dari Vue single-file → React; class Tailwind dipertahankan agar visual identik.
 
-## Produksi (Server Sendiri)
+## Produksi (Vercel + Supabase)
 
-1. Ganti `DATABASE_URL` ke PostgreSQL:
-   ```
-   DATABASE_URL="postgresql://user:password@localhost:5432/nikahplan"
-   ```
-2. Jalankan `npx prisma migrate deploy` (atau `db:push` untuk dev).
-3. Set `AUTH_SECRET` acak panjang.
-4. Build & jalankan:
-   ```bash
-   npm run build
-   npm run start
-   ```
-5. Opsional: PM2 / Docker / reverse proxy (Nginx).
-
-## Akun Tes (boleh dihapus)
-
-- `test@nikahplan.dev` / `password123`
-- `userb@nikahplan.dev` / `password123`
+1. Supabase: bikin project → **SQL Editor** → paste `supabase_migration.sql` → **Run**.
+2. Supabase → Settings → API → salin **Project URL** + **service_role** key.
+3. Vercel: import repo GitHub → set env `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `AUTH_SECRET` → Deploy.
+4. Domain (opsional): Vercel → Settings → Domains → ikuti instruksi DNS record.
 
 ## Fitur Sudah Ada
 

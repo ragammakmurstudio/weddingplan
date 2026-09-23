@@ -2,7 +2,7 @@ import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { compare } from "bcryptjs";
 import { z } from "zod";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/supabase";
 
 const credentialsSchema = z.object({
   email: z.string().email(),
@@ -23,10 +23,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const parsed = credentialsSchema.safeParse(credentials);
         if (!parsed.success) return null;
 
-        const user = await prisma.user.findUnique({
-          where: { email: parsed.data.email.toLowerCase() },
-        });
-        if (!user) return null;
+        const { data: user, error } = await db()
+          .from("User")
+          .select("*")
+          .eq("email", parsed.data.email.toLowerCase())
+          .maybeSingle();
+        if (error || !user) return null;
 
         const valid = await compare(parsed.data.password, user.passwordHash);
         if (!valid) return null;
