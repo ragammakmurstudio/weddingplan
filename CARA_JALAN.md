@@ -33,6 +33,8 @@ npm run typecheck  # tsc --noEmit
 | `supabase_migration.sql` | Skema DB — paste ke Supabase SQL Editor, Run |
 | `src/components/dashboard/DashboardClient.tsx` | Seluruh UI dashboard (9 tab) |
 | `src/lib/seed-data.ts` | Data demo saat register |
+| `src/app/api/webhook/lynk/route.ts` | Webhook lynk.id → insert `Purchase` |
+| `scripts/purchases.mjs` | `--add` / `--list` entitlement akses |
 
 ## Catatan
 
@@ -50,9 +52,29 @@ npm run typecheck  # tsc --noEmit
 3. Vercel: import repo GitHub → set env `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `AUTH_SECRET` → Deploy.
 4. Domain (opsional): Vercel → Settings → Domains → ikuti instruksi DNS record.
 
+## Menjual Akses (lynk.id — sekali bayar, selamanya)
+
+Alur: pembeli bayar di lynk.id → webhook mencatat pembelian di tabel `Purchase` → pembeli **daftar pakai email yang sama** → akun aktif selamanya. Akun lama tetap jalan tanpa gate.
+
+### Setup sekali
+1. Isi `NEXT_PUBLIC_LYNK_URL` (link checkout produk) di `.env` + Vercel.
+2. lynk.id → Dashboard → **Webhook** → URL: `https://<domain>/api/webhook/lynk` → Simpan → salin **merchant key** (muncul setelah URL disimpan).
+3. Set env `LYNK_MERCHANT_KEY` di `.env` + Vercel → redeploy.
+4. Supabase SQL Editor → paste `supabase_migration.sql` lagi → Run (tabel `Purchase` ditambahkan di bawah file).
+
+### Operasional
+- Pembeli daftar dengan **email yang sama** seperti saat checkout lynk.id.
+- Entitlement manual (test/teman): `node scripts/purchases.mjs --add email@x.com "catatan"`
+- Cek daftar pembelian: `node scripts/purchases.mjs --list`
+- Test pipeline: beli produk harga minimal 1× → cek log Vercel cari `[lynk-webhook]` → `--list`.
+
+### Troubleshooting
+- Signature invalid → cocokkan `amount`/`refId`/`message_id` dari log dengan `LYNK_MERCHANT_KEY`.
+- Log payload tidak memuat `email` → sementara pakai `--add` manual untuk pembeli terdampak; kembangkan klaim via `refId` struk email lynk.id.
+
 ## Fitur Sudah Ada
 
-- Register / login / logout (Auth.js + bcrypt)
+- Register (wajib punya pembelian di lynk.id) / login / logout (Auth.js + bcrypt)
 - Proteksi `/dashboard` tanpa session → redirect `/login`
 - 9 tab: Dashboard, Mempelai, Budget, Seserahan, Vendor, Administrasi KUA, Undangan, Timeline, Rundown
 - Reset data demo (dengan popup konfirmasi)
@@ -66,4 +88,4 @@ npm run typecheck  # tsc --noEmit
 - Verifikasi email, lupa password
 - Google OAuth
 - Workspace / role (multi-anggota)
-- Billing / langganan SaaS
+- Klaim otomatis via `refId` kalau payload webhook lynk.id tidak memuat email

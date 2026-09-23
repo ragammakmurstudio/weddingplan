@@ -155,3 +155,19 @@ alter table "Guest"          enable row level security;
 alter table "ChecklistItem"  enable row level security;
 alter table "RundownItem"    enable row level security;
 alter table "CommitteeMember" enable row level security;
+alter table "Purchase"       enable row level security;
+
+-- ---------- Purchase (akses sekali bayar via lynk.id) ----------
+-- Diisi oleh webhook /api/webhook/lynk (atau script scripts/purchases.mjs).
+-- Baris dengan "userId" null = entitlement belum dipakai → saat register,
+-- email pembeli dicocokkan & baris diklaim (userId diisi).
+create table if not exists "Purchase" (
+  "id"         text primary key,
+  "refId"      text,
+  "email"      text,
+  "amount"     text,
+  "messageId"  text not null unique,
+  "userId"     text references "User" ("id") on delete set null,
+  "createdAt"  timestamptz not null default now()
+);
+create index if not exists "Purchase_email_idx" on "Purchase" ("email");

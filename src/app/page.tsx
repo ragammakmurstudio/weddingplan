@@ -6,6 +6,7 @@ import { BrandCredit } from "@/components/BrandCredit";
 export default async function HomePage() {
   const session = await auth();
   if (session?.user) redirect("/dashboard");
+  const lynkUrl = process.env.NEXT_PUBLIC_LYNK_URL;
 
   return (
     <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-rose-50 via-white to-amber-50 px-4">
@@ -21,12 +22,23 @@ export default async function HomePage() {
           timeline — dalam satu akun pribadi.
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
-          <Link
-            href="/register"
-            className="bg-rose-600 text-white px-6 py-3 rounded-xl text-sm font-semibold hover:bg-rose-700 transition"
-          >
-            Daftar Gratis
-          </Link>
+          {lynkUrl ? (
+            <a
+              href={lynkUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-rose-600 text-white px-6 py-3 rounded-xl text-sm font-semibold hover:bg-rose-700 transition"
+            >
+              Beli Akses Selamanya
+            </a>
+          ) : (
+            <Link
+              href="/register"
+              className="bg-rose-600 text-white px-6 py-3 rounded-xl text-sm font-semibold hover:bg-rose-700 transition"
+            >
+              Daftar Sekarang
+            </Link>
+          )}
           <Link
             href="/login"
             className="bg-white border border-slate-200 text-slate-700 px-6 py-3 rounded-xl text-sm font-semibold hover:bg-slate-50 transition"
@@ -34,6 +46,12 @@ export default async function HomePage() {
             Masuk
           </Link>
         </div>
+        <p className="text-xs text-slate-400">
+          Sudah beli?{" "}
+          <Link href="/register" className="text-rose-600 font-semibold hover:underline">
+            Daftar di sini
+          </Link>
+        </p>
         <BrandCredit className="pt-6 border-t border-rose-100" />
       </div>
     </main>

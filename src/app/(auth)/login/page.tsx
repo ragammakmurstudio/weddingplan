@@ -9,6 +9,7 @@ export default function LoginPage() {
     loginAction,
     undefined
   );
+  const lynkUrl = process.env.NEXT_PUBLIC_LYNK_URL;
 
   return (
     <div className="space-y-5">
@@ -70,6 +71,20 @@ export default function LoginPage() {
           Daftar di sini
         </Link>
       </p>
+
+      {lynkUrl && (
+        <p className="text-xs text-slate-500 text-center">
+          Belum beli akses?{" "}
+          <a
+            href={lynkUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-rose-600 font-semibold hover:underline"
+          >
+            Beli selamanya di Lynk.id ↗
+          </a>
+        </p>
+      )}
     </div>
   );
 }

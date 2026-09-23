@@ -9,13 +9,14 @@ export default function RegisterPage() {
     registerAction,
     undefined
   );
+  const lynkUrl = process.env.NEXT_PUBLIC_LYNK_URL;
 
   return (
     <div className="space-y-5">
       <div>
         <h2 className="text-xl font-bold text-slate-800">Buat Akun</h2>
         <p className="text-xs text-slate-500 mt-1">
-          Satu akun = satu data wedding pribadi Anda
+          Akses selamanya — daftar dengan email yang sama saat membeli di Lynk.id
         </p>
       </div>
 
@@ -47,6 +48,9 @@ export default function RegisterPage() {
             className="w-full rounded-xl border border-slate-200 p-2.5 text-sm focus:ring-rose-500 focus:border-rose-500"
             placeholder="you@example.com"
           />
+          <p className="text-[11px] text-slate-400 mt-1">
+            Harus sama dengan email yang dipakai membeli akses di Lynk.id
+          </p>
         </div>
         <div>
           <label htmlFor="password" className="block text-xs font-medium text-slate-700 mb-1">
@@ -78,6 +82,22 @@ export default function RegisterPage() {
           {pending ? "Membuat akun..." : "Daftar & Mulai"}
         </button>
       </form>
+
+      {lynkUrl && (
+        <div className="rounded-xl border border-rose-100 bg-rose-50/60 p-3 text-center space-y-1">
+          <p className="text-xs text-slate-600">
+            Belum punya akses? Sekali bayar, pakai selamanya.
+          </p>
+          <a
+            href={lynkUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-block text-xs font-semibold text-rose-600 hover:underline"
+          >
+            Beli di Lynk.id ↗
+          </a>
+        </div>
+      )}
 
       <p className="text-xs text-slate-500 text-center">
         Sudah punya akun?{" "}

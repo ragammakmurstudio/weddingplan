@@ -138,6 +138,20 @@ export async function registerAction(
     return { error: "Email sudah terdaftar" };
   }
 
+  const { data: purchase } = await db()
+    .from("Purchase")
+    .select("id")
+    .eq("email", email)
+    .is("userId", null)
+    .limit(1)
+    .maybeSingle();
+  if (!purchase) {
+    return {
+      error:
+        "Email ini belum punya akses. Beli dulu di Lynk.id, lalu daftar dengan email yang sama seperti saat membeli.",
+    };
+  }
+
   try {
     const userId = crypto.randomUUID();
     const { error: insertErr } = await db().from("User").insert({
@@ -152,6 +166,18 @@ export async function registerAction(
       }
       throw new Error(insertErr.message);
     }
+
+    const { data: claimed, error: claimErr } = await db()
+      .from("Purchase")
+      .update({ userId })
+      .eq("id", purchase.id)
+      .is("userId", null)
+      .select("id");
+    if (claimErr || !claimed?.length) {
+      await db().from("User").delete().eq("id", userId);
+      return { error: "Gagal mengklaim pembelian. Coba lagi." };
+    }
+
     await createWeddingWithSeed(userId);
     await signIn("credentials", {
       email,
