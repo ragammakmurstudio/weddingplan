@@ -10,6 +10,7 @@ import type {
   Vendor,
   WeddingState,
 } from "@/lib/types";
+import { isKuaStep } from "@/lib/types";
 import { formatDate, formatRupiah, getVendorBadgeClass, newId } from "@/lib/utils";
 import { logoutAction, resetWeddingAction, saveWeddingAction } from "@/actions/auth";
 import { BrandCredit } from "@/components/BrandCredit";
@@ -197,7 +198,8 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
   const totalExpenses = state.budgetList.reduce((sum, b) => sum + (b.actual || 0), 0);
   const totalMaharCost = state.maharItems.reduce((sum, m) => sum + (m.cost || 0), 0);
   const confirmedVendorsCount = state.vendors.filter((v) => v.status === "Deal").length;
-  const completedDocsCount = state.adminDocs.filter((d) => d.completed).length;
+  const kuaDocs = state.adminDocs.filter((d) => !isKuaStep(d));
+  const completedDocsCount = kuaDocs.filter((d) => d.doneCpp && d.doneCpw).length;
   const pendingChecklist = state.checklist.filter((c) => !c.done);
   const overallProgress = Math.round(
     (state.checklist.filter((c) => c.done).length / (state.checklist.length || 1)) * 100
@@ -494,7 +496,7 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
                   <div>
                     <p className="text-xs text-slate-500 font-medium">Berkas KUA</p>
                     <p className="text-lg font-bold text-slate-800">
-                      {completedDocsCount} / {state.adminDocs.length}
+                      {completedDocsCount} / {kuaDocs.length}
                     </p>
                     <p className="text-[10px] text-slate-400">Dokumen administrasi siap</p>
                   </div>
@@ -1148,7 +1150,7 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
 
           {activeTab === "administrasi" && (
             <section className="space-y-6">
-              <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-6">
+              <div className="bg-white p-4 sm:p-6 rounded-2xl border border-slate-100 shadow-sm space-y-4">
                 <div className="border-b border-slate-100 pb-4">
                   <h2 className="text-xl font-bold text-slate-800">
                     Administrasi &amp; Surat Persyaratan Nikah (KUA)
@@ -1157,51 +1159,121 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
                     Kelengkapan dokumen resmi persyaratan pendaftaran nikah di KUA / Catatan Sipil
                   </p>
                 </div>
-                <div className="grid grid-cols-1 gap-3">
-                  {state.adminDocs.map((doc) => (
-                    <div
-                      key={doc.id}
-                      className="p-3.5 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between hover:bg-rose-50/30 transition"
-                    >
-                      <div className="flex items-center space-x-3">
-                        <input
-                          type="checkbox"
-                          checked={doc.completed}
-                          onChange={() =>
-                            update((s) => ({
-                              ...s,
-                              adminDocs: s.adminDocs.map((d) =>
-                                d.id === doc.id ? { ...d, completed: !d.completed } : d
-                              ),
-                            }))
-                          }
-                          className="rounded text-rose-600 w-4 h-4 focus:ring-rose-500"
-                        />
-                        <div>
-                          <p
-                            className={`text-xs sm:text-sm ${
-                              doc.completed
-                                ? "line-through text-slate-400"
-                                : "font-semibold text-slate-800"
-                            }`}
+
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse min-w-[480px]">
+                    <thead>
+                      <tr>
+                        <th className="bg-rose-600 text-white text-left px-4 py-3 rounded-tl-xl text-xs sm:text-sm font-bold">
+                          Administrasi Persiapan Menikah
+                        </th>
+                        <th className="bg-rose-600 text-white px-4 py-3 text-xs sm:text-sm font-bold w-20">
+                          CPP
+                        </th>
+                        <th className="bg-rose-600 text-white px-4 py-3 rounded-tr-xl text-xs sm:text-sm font-bold w-20">
+                          CPW
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {state.adminDocs
+                        .filter((doc) => !isKuaStep(doc))
+                        .map((doc, i) => (
+                          <tr
+                            key={doc.id}
+                            className={
+                              i % 2 === 0 ? "bg-rose-50/70" : "bg-white"
+                            }
                           >
-                            {doc.title}
-                          </p>
-                          <p className="text-[11px] text-slate-400">{doc.description}</p>
-                        </div>
-                      </div>
-                      <span
-                        className={`text-[10px] px-2.5 py-1 rounded-full font-bold ${
-                          doc.completed
-                            ? "bg-emerald-100 text-emerald-700"
-                            : "bg-slate-200 text-slate-600"
-                        }`}
-                      >
-                        {doc.completed ? "Siap" : "Belum"}
-                      </span>
-                    </div>
-                  ))}
+                            <td className="px-4 py-3 text-xs sm:text-sm text-slate-700 border-b border-rose-100">
+                              {doc.title}
+                            </td>
+                            <td className="px-4 py-3 border-b border-rose-100 text-center">
+                              <input
+                                type="checkbox"
+                                aria-label={`CPP — ${doc.title}`}
+                                checked={doc.doneCpp}
+                                onChange={() =>
+                                  update((s) => ({
+                                    ...s,
+                                    adminDocs: s.adminDocs.map((d) =>
+                                      d.id === doc.id
+                                        ? { ...d, doneCpp: !d.doneCpp }
+                                        : d
+                                    ),
+                                  }))
+                                }
+                                className="rounded text-rose-600 w-4 h-4 focus:ring-rose-500 align-middle"
+                              />
+                            </td>
+                            <td className="px-4 py-3 border-b border-rose-100 text-center">
+                              <input
+                                type="checkbox"
+                                aria-label={`CPW — ${doc.title}`}
+                                checked={doc.doneCpw}
+                                onChange={() =>
+                                  update((s) => ({
+                                    ...s,
+                                    adminDocs: s.adminDocs.map((d) =>
+                                      d.id === doc.id
+                                        ? { ...d, doneCpw: !d.doneCpw }
+                                        : d
+                                    ),
+                                  }))
+                                }
+                                className="rounded text-rose-600 w-4 h-4 focus:ring-rose-500 align-middle"
+                              />
+                            </td>
+                          </tr>
+                        ))}
+                      {state.adminDocs
+                        .filter((doc) => isKuaStep(doc))
+                        .map((doc, i, arr) => (
+                          <tr
+                            key={doc.id}
+                            className={
+                              i === arr.length - 1
+                                ? "bg-rose-50/70"
+                                : "bg-white"
+                            }
+                          >
+                            <td className="px-4 py-3 text-xs sm:text-sm font-semibold text-slate-700 border-b border-rose-100">
+                              {doc.title}
+                            </td>
+                            <td
+                              colSpan={2}
+                              className="px-4 py-3 border-b border-rose-100"
+                            >
+                              <select
+                                aria-label={doc.title}
+                                value={doc.status ?? "Belum"}
+                                onChange={(e) =>
+                                  update((s) => ({
+                                    ...s,
+                                    adminDocs: s.adminDocs.map((d) =>
+                                      d.id === doc.id
+                                        ? { ...d, status: e.target.value }
+                                        : d
+                                    ),
+                                  }))
+                                }
+                                className="w-full sm:w-56 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs sm:text-sm text-slate-700 focus:ring-rose-500 focus:border-rose-500"
+                              >
+                                <option value="Belum">Belum</option>
+                                <option value="Proses">Proses</option>
+                                <option value="Selesai">Selesai</option>
+                              </select>
+                            </td>
+                          </tr>
+                        ))}
+                    </tbody>
+                  </table>
                 </div>
+
+                <p className="text-xs text-slate-400">
+                  Progres: {completedDocsCount} / {kuaDocs.length} dokumen
+                  lengkap (CPP &amp; CPW tercentang)
+                </p>
               </div>
             </section>
           )}

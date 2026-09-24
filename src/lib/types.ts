@@ -52,8 +52,16 @@ export type AdminDoc = {
   id: string;
   title: string;
   description: string;
-  completed: boolean;
+  doneCpp: boolean;
+  doneCpw: boolean;
+  /** Hanya untuk baris proses KUA (id "kua-*"): "Belum" | "Proses" | "Selesai" */
+  status: string | null;
 };
+
+/** Baris proses KUA (dropdown status), bukan dokumen centang. */
+export function isKuaStep(doc: AdminDoc): boolean {
+  return doc.id.startsWith("kua-");
+}
 
 export type Guest = {
   id: string;

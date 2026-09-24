@@ -188,3 +188,10 @@ create table if not exists "PasswordResetToken" (
 );
 create index if not exists "PasswordResetToken_userId_idx" on "PasswordResetToken" ("userId");
 alter table "PasswordResetToken" enable row level security;
+
+-- ---------- AdminDoc: checkbox per pihak (CPP/CPW) + status proses KUA ----------
+-- Dipakai tab "Administrasi & Surat": tiap dokumen punya centang CPP & CPW,
+-- plus 2 baris proses (Daftar ke KUA / Bimbingan) dengan status Belum|Proses|Selesai.
+alter table "AdminDoc" add column if not exists "doneCpp" boolean not null default false;
+alter table "AdminDoc" add column if not exists "doneCpw" boolean not null default false;
+alter table "AdminDoc" add column if not exists "status" text;

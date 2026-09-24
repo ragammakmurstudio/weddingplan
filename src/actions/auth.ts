@@ -268,7 +268,9 @@ const adminDocSchema = z.object({
   id: idSchema,
   title: z.string().max(300),
   description: z.string().max(500),
-  completed: z.boolean(),
+  doneCpp: z.boolean(),
+  doneCpw: z.boolean(),
+  status: z.string().max(20).nullable(),
 });
 
 const guestSchema = z.object({
@@ -686,7 +688,14 @@ export async function getWeddingForUser(): Promise<WeddingState | null> {
     seserahanCppToCpw: seserahanItems.filter((s) => s.section === "cppToCpw").map((s) => ({ id: s.id, title: s.title, cost: s.cost, ready: s.ready, link: s.link })),
     seserahanCpwToCpp: seserahanItems.filter((s) => s.section === "cpwToCpp").map((s) => ({ id: s.id, title: s.title, cost: s.cost, ready: s.ready, link: s.link })),
     vendors: vendors.map((v) => ({ id: v.id, category: v.category, name: v.name, price: v.price, status: v.status, contact: v.contact, notes: v.notes })),
-    adminDocs: adminDocs.map((d) => ({ id: d.id, title: d.title, description: d.description, completed: d.completed })),
+    adminDocs: adminDocs.map((d) => ({
+      id: d.id,
+      title: d.title,
+      description: d.description,
+      doneCpp: d.doneCpp ?? false,
+      doneCpw: d.doneCpw ?? false,
+      status: d.status ?? null,
+    })),
     guests: guests.map((g) => ({ id: g.id, name: g.name, side: g.side, category: g.category, pax: g.pax, sent: g.sent, status: g.status, isVip: g.isVip })),
     checklist: checklistItems.map((c) => ({ id: c.id, timeframe: c.timeframe, task: c.task, done: c.done })),
     rundownList: rundownItems.map((r) => ({ id: r.id, time: r.time, activity: r.activity, pic: r.pic })),
@@ -705,7 +714,11 @@ export async function getWeddingForUser(): Promise<WeddingState | null> {
     state.seserahanCpwToCpp = seed.seserahanCpwToCpp;
     needsBackfill = true;
   }
-  if (state.adminDocs.length === 0) {
+  if (
+    state.adminDocs.length === 0 ||
+    !state.adminDocs.some((d) => d.id === "adm-1")
+  ) {
+    // Ganti otomatis daftar administrasi versi lama dengan format baru (CPP/CPW)
     state.adminDocs = seed.adminDocs;
     needsBackfill = true;
   }
