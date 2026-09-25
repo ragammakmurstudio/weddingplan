@@ -1257,8 +1257,28 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
                               <td className="px-4 py-3 border-b border-slate-100 text-slate-600">
                                 {v.category}
                               </td>
-                              <td className="px-4 py-3 border-b border-slate-100 text-slate-700 text-right">
-                                {formatRupiah(v.price)}
+                              <td className="px-4 py-3 border-b border-slate-100 text-slate-700">
+                                <input
+                                  type="number"
+                                  min={0}
+                                  aria-label={`Harga — ${v.name}`}
+                                  value={v.price}
+                                  onChange={(e) =>
+                                    update((s) => ({
+                                      ...s,
+                                      vendors: s.vendors.map((x) =>
+                                        x.id === v.id
+                                          ? {
+                                              ...x,
+                                              price:
+                                                Number(e.target.value) || 0,
+                                            }
+                                          : x
+                                      ),
+                                    }))
+                                  }
+                                  className="w-28 text-right bg-transparent border border-transparent hover:border-slate-200 focus:border-rose-300 focus:ring-1 focus:ring-rose-500 rounded-lg px-2 py-1 text-xs sm:text-sm"
+                                />
                               </td>
                               <td className="px-4 py-3 border-b border-slate-100">
                                 <select
@@ -1285,16 +1305,6 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
                               </td>
                               <td className="px-4 py-3 border-b border-slate-100 text-right whitespace-nowrap">
                                 <div className="inline-flex items-center gap-3">
-                                  {v.contact && (
-                                    <a
-                                      href={`https://wa.me/${v.contact}`}
-                                      target="_blank"
-                                      rel="noreferrer"
-                                      className="text-emerald-600 hover:text-emerald-700 font-bold"
-                                    >
-                                      <i className="fa-brands fa-whatsapp" />
-                                    </a>
-                                  )}
                                   <button
                                     onClick={() => editVendor(v)}
                                     className="text-slate-400 hover:text-blue-600"
