@@ -349,7 +349,7 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
     <div className="flex flex-col min-h-screen">
       <header className="bg-white border-b border-rose-100 sticky top-0 z-30 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap justify-between items-center gap-4">
-          <div className="flex items-center space-x-3 min-w-0">
+          <div className="flex items-center space-x-3 min-w-0 flex-1">
             <button
               type="button"
               onClick={() => setNavOpen(true)}
@@ -363,24 +363,21 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
               alt="NikahPlan"
               className="w-10 shrink-0 h-auto"
             />
-            <div className="min-w-0">
-              <h1 className="font-cormorant text-2xl font-bold text-slate-800 leading-tight truncate">
-                {state.brideData.cpp.nickname || "Pengantin Pria"} &{" "}
-                {state.brideData.cpw.nickname || "Pengantin Wanita"}
-              </h1>
-              <p className="text-xs text-slate-500 font-medium truncate">
-                <i className="fa-regular fa-calendar-check mr-1 text-rose-500" />
-                {formatDate(state.weddingDate)} |{" "}
-                {state.weddingVenue || "Lokasi Belum Ditentukan"}
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center space-x-2 bg-rose-50 px-4 py-2 rounded-xl border border-rose-100">
-            <i className="fa-solid fa-hourglass-half text-rose-500 animate-pulse" />
-            <div className="text-xs sm:text-sm font-semibold text-slate-700">
-              <span className="text-rose-600 font-bold text-base">{daysRemaining}</span> Hari Menuju
-              Akad &amp; Resepsi
+            <div className="min-w-0 flex-1 flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <h1 className="font-cormorant text-2xl font-bold text-slate-800 leading-tight truncate">
+                  {state.brideData.cpp.nickname || "Pengantin Pria"} &{" "}
+                  {state.brideData.cpw.nickname || "Pengantin Wanita"}
+                </h1>
+                <p className="text-xs text-slate-500 font-medium truncate">
+                  <i className="fa-regular fa-calendar-check mr-1 text-rose-500" />
+                  {formatDate(state.weddingDate)}
+                </p>
+              </div>
+              <span className="inline-flex items-center space-x-1.5 bg-rose-50 border border-rose-100 text-rose-600 text-xs font-bold px-2.5 py-1 rounded-lg shrink-0">
+                <i className="fa-solid fa-hourglass-half text-rose-500" />
+                <span>H-{daysRemaining}</span>
+              </span>
             </div>
           </div>
 
