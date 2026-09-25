@@ -27,6 +27,17 @@ const TABS: { id: TabId; name: string; icon: string }[] = [
   { id: "rundown", name: "Rundown & Panitia", icon: "fa-solid fa-clipboard-list" },
 ];
 
+const VENDOR_CATEGORIES = [
+  "Venue",
+  "Catering",
+  "Dekorasi",
+  "MUA",
+  "Foto & Video",
+  "Entertainment",
+  "Undangan & Souvenir",
+  "Lainnya",
+];
+
 type Props = {
   initial: WeddingState;
   userEmail: string;
@@ -200,6 +211,37 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
   const confirmedVendorsCount = state.vendors.filter((v) => v.status === "Deal").length;
   const kuaDocs = state.adminDocs.filter((d) => !isKuaStep(d));
   const completedDocsCount = kuaDocs.filter((d) => d.doneCpp && d.doneCpw).length;
+  const finalVendors = state.vendors.filter((v) => v.status === "Deal");
+  const candidateVendors = state.vendors.filter((v) => v.status !== "Deal");
+  const vendorCategories = [
+    ...VENDOR_CATEGORIES,
+    ...new Set(
+      state.vendors
+        .map((v) => v.category)
+        .filter((c) => !VENDOR_CATEGORIES.includes(c))
+    ),
+  ];
+  const openVendorModal = (category = "Venue") => {
+    setVendorForm({
+      id: "",
+      category,
+      name: "",
+      price: 0,
+      status: "Survey / Pitching",
+      contact: "",
+      notes: "",
+    });
+    setShowVendorModal(true);
+  };
+  const editVendor = (v: Vendor) => {
+    setVendorForm(v);
+    setShowVendorModal(true);
+  };
+  const deleteVendor = (id: string) =>
+    update((s) => ({
+      ...s,
+      vendors: s.vendors.filter((x) => x.id !== id),
+    }));
   const pendingChecklist = state.checklist.filter((c) => !c.done);
   const overallProgress = Math.round(
     (state.checklist.filter((c) => c.done).length / (state.checklist.length || 1)) * 100
@@ -1063,86 +1105,214 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
                     </p>
                   </div>
                   <button
-                    onClick={() => {
-                      setVendorForm({
-                        id: "",
-                        category: "Venue",
-                        name: "",
-                        price: 0,
-                        status: "Survey / Pitching",
-                        contact: "",
-                        notes: "",
-                      });
-                      setShowVendorModal(true);
-                    }}
+                    onClick={() => openVendorModal("Venue")}
                     className="bg-rose-600 text-white px-3.5 py-2 rounded-xl text-xs font-semibold hover:bg-rose-700 transition"
                   >
                     <i className="fa-solid fa-plus mr-1" /> Tambah Vendor / Venue
                   </button>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {state.vendors.map((v) => (
-                    <div
-                      key={v.id}
-                      className="bg-slate-50/70 p-4 rounded-2xl border border-slate-200/80 space-y-3 relative"
-                    >
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <span className="bg-rose-100 text-rose-700 px-2.5 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider">
-                            {v.category}
-                          </span>
-                          <h3 className="font-bold text-slate-800 text-base mt-1">{v.name}</h3>
-                        </div>
-                        <span
-                          className={`${getVendorBadgeClass(v.status)} text-xs px-2.5 py-1 rounded-full font-bold`}
+
+                {/* Vendor Final — card per kategori, selalu tampil */}
+                <div className="space-y-3">
+                  <div className="border-b border-slate-100 pb-3">
+                    <h3 className="font-bold text-slate-800 flex items-center gap-2 text-sm sm:text-base">
+                      <i className="fa-solid fa-crown text-amber-500" /> Vendor Final
+                    </h3>
+                    <p className="text-xs text-slate-500">
+                      Vendor berstatus Deal per kategori — pilihan utama pernikahanmu
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {vendorCategories.map((cat) => {
+                      const deals = finalVendors.filter((v) => v.category === cat);
+                      return (
+                        <div
+                          key={cat}
+                          className={`rounded-2xl border p-4 space-y-3 ${
+                            deals.length
+                              ? "bg-white border-rose-100 shadow-sm"
+                              : "bg-slate-50/60 border-dashed border-slate-300"
+                          }`}
                         >
-                          {v.status}
-                        </span>
-                      </div>
-                      <p className="text-xs text-slate-600 line-clamp-2">
-                        <i className="fa-solid fa-info-circle text-slate-400 mr-1" />
-                        {v.notes || "Tidak ada catatan"}
-                      </p>
-                      <div className="pt-2 border-t border-slate-200/60 flex justify-between items-center text-xs">
-                        <div className="space-y-0.5">
-                          <p className="text-slate-400 text-[10px]">Harga Sepakat / Penawaran</p>
-                          <p className="font-bold text-slate-800">{formatRupiah(v.price)}</p>
-                        </div>
-                        <div className="space-x-2">
-                          {v.contact && (
-                            <a
-                              href={`https://wa.me/${v.contact}`}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="text-emerald-600 hover:text-emerald-700 font-bold"
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="bg-rose-100 text-rose-700 px-2.5 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider">
+                              {cat}
+                            </span>
+                            <button
+                              onClick={() => openVendorModal(cat)}
+                              aria-label={`Tambah vendor ${cat}`}
+                              className="w-6 h-6 rounded-full bg-rose-600 text-white text-xs font-bold hover:bg-rose-700 transition flex items-center justify-center"
                             >
-                              <i className="fa-brands fa-whatsapp text-sm mr-1" /> Kontak
-                            </a>
+                              +
+                            </button>
+                          </div>
+                          {deals.length === 0 ? (
+                            <div className="py-5 text-center space-y-1.5">
+                              <p className="text-xs text-slate-400">Belum ada vendor final</p>
+                              <button
+                                onClick={() => openVendorModal(cat)}
+                                className="text-xs font-semibold text-rose-600 hover:underline"
+                              >
+                                + Tambah vendor
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="space-y-3">
+                              {deals.map((v) => (
+                                <div
+                                  key={v.id}
+                                  className="bg-slate-50/80 rounded-xl border border-slate-100 p-3 space-y-2"
+                                >
+                                  <div className="flex justify-between items-start gap-2">
+                                    <h4 className="font-bold text-slate-800 text-sm leading-snug">
+                                      {v.name}
+                                    </h4>
+                                    <span
+                                      className={`${getVendorBadgeClass(v.status)} text-[10px] px-2 py-0.5 rounded-full font-bold shrink-0`}
+                                    >
+                                      {v.status}
+                                    </span>
+                                  </div>
+                                  {v.notes && (
+                                    <p className="text-[11px] text-slate-500 line-clamp-2">
+                                      {v.notes}
+                                    </p>
+                                  )}
+                                  <p className="text-xs font-bold text-slate-800">
+                                    {formatRupiah(v.price)}
+                                  </p>
+                                  <div className="pt-2 border-t border-slate-200/60 flex items-center justify-between text-xs">
+                                    {v.contact ? (
+                                      <a
+                                        href={`https://wa.me/${v.contact}`}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="text-emerald-600 hover:text-emerald-700 font-bold"
+                                      >
+                                        <i className="fa-brands fa-whatsapp mr-1" /> Kontak
+                                      </a>
+                                    ) : (
+                                      <span className="text-slate-300">—</span>
+                                    )}
+                                    <div className="space-x-2">
+                                      <button
+                                        onClick={() => editVendor(v)}
+                                        className="text-slate-400 hover:text-blue-600"
+                                        aria-label="Edit vendor"
+                                      >
+                                        <i className="fa-solid fa-pen" />
+                                      </button>
+                                      <button
+                                        onClick={() => deleteVendor(v.id)}
+                                        className="text-slate-400 hover:text-red-600"
+                                        aria-label="Hapus vendor"
+                                      >
+                                        <i className="fa-solid fa-trash" />
+                                      </button>
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
                           )}
-                          <button
-                            onClick={() => {
-                              setVendorForm(v);
-                              setShowVendorModal(true);
-                            }}
-                            className="text-slate-400 hover:text-blue-600"
-                          >
-                            <i className="fa-solid fa-pen" />
-                          </button>
-                          <button
-                            onClick={() =>
-                              update((s) => ({
-                                ...s,
-                                vendors: s.vendors.filter((x) => x.id !== v.id),
-                              }))
-                            }
-                            className="text-slate-400 hover:text-red-600"
-                          >
-                            <i className="fa-solid fa-trash" />
-                          </button>
                         </div>
-                      </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Kandidat — list baris vendor non-Deal */}
+                <div className="space-y-3">
+                  <div className="border-b border-slate-100 pb-3">
+                    <h3 className="font-bold text-slate-800 flex items-center gap-2 text-sm sm:text-base">
+                      <i className="fa-solid fa-clipboard-check text-slate-400" /> Kandidat Vendor
+                    </h3>
+                    <p className="text-xs text-slate-500">
+                      Vendor survei / pitching / batal — jadikan Deal lewat tombol edit
+                    </p>
+                  </div>
+                  {candidateVendors.length === 0 ? (
+                    <p className="text-xs text-slate-400 text-center py-5">
+                      Belum ada kandidat — vendor non-Deal akan tampil di sini
+                    </p>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <table className="w-full border-collapse min-w-[560px] text-xs sm:text-sm">
+                        <thead>
+                          <tr>
+                            <th className="bg-slate-100 text-slate-600 text-left px-4 py-2.5 font-bold rounded-tl-xl">
+                              Nama Vendor
+                            </th>
+                            <th className="bg-slate-100 text-slate-600 text-left px-4 py-2.5 font-bold">
+                              Kategori
+                            </th>
+                            <th className="bg-slate-100 text-slate-600 text-right px-4 py-2.5 font-bold">
+                              Harga
+                            </th>
+                            <th className="bg-slate-100 text-slate-600 text-left px-4 py-2.5 font-bold">
+                              Status
+                            </th>
+                            <th className="bg-slate-100 text-slate-600 text-right px-4 py-2.5 font-bold rounded-tr-xl">
+                              Aksi
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {candidateVendors.map((v, i) => (
+                            <tr
+                              key={v.id}
+                              className={i % 2 === 0 ? "bg-rose-50/50" : "bg-white"}
+                            >
+                              <td className="px-4 py-3 border-b border-slate-100 font-semibold text-slate-800">
+                                {v.name}
+                              </td>
+                              <td className="px-4 py-3 border-b border-slate-100 text-slate-600">
+                                {v.category}
+                              </td>
+                              <td className="px-4 py-3 border-b border-slate-100 text-slate-700 text-right">
+                                {formatRupiah(v.price)}
+                              </td>
+                              <td className="px-4 py-3 border-b border-slate-100">
+                                <span
+                                  className={`${getVendorBadgeClass(v.status)} text-[10px] px-2 py-0.5 rounded-full font-bold`}
+                                >
+                                  {v.status}
+                                </span>
+                              </td>
+                              <td className="px-4 py-3 border-b border-slate-100 text-right whitespace-nowrap">
+                                <div className="inline-flex items-center gap-3">
+                                  {v.contact && (
+                                    <a
+                                      href={`https://wa.me/${v.contact}`}
+                                      target="_blank"
+                                      rel="noreferrer"
+                                      className="text-emerald-600 hover:text-emerald-700 font-bold"
+                                    >
+                                      <i className="fa-brands fa-whatsapp" />
+                                    </a>
+                                  )}
+                                  <button
+                                    onClick={() => editVendor(v)}
+                                    className="text-slate-400 hover:text-blue-600"
+                                    aria-label="Edit vendor"
+                                  >
+                                    <i className="fa-solid fa-pen" />
+                                  </button>
+                                  <button
+                                    onClick={() => deleteVendor(v.id)}
+                                    className="text-slate-400 hover:text-red-600"
+                                    aria-label="Hapus vendor"
+                                  >
+                                    <i className="fa-solid fa-trash" />
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
                     </div>
-                  ))}
+                  )}
                 </div>
               </div>
             </section>
