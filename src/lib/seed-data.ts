@@ -28,6 +28,7 @@ export function defaultWeddingState(): WeddingState {
       },
     },
     budgetList: [],
+    savings: [],
     maharItems: [
       { id: "seed-mahar-1", title: "Logam Mulia Antam 10 Gram", cost: 13500000, ready: false },
       { id: "seed-mahar-2", title: "Set Perhiasan Emas 5 Gram", cost: 6500000, ready: false },

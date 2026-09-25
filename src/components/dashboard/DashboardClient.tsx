@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore
 import type {
   BudgetItem,
   ChecklistItem,
+  SavingsEntry,
   SeserahanItem,
   SeserahanSection,
   TabId,
@@ -18,7 +19,8 @@ import { BrandCredit } from "@/components/BrandCredit";
 const TABS: { id: TabId; name: string; icon: string }[] = [
   { id: "dashboard", name: "Dashboard Overview", icon: "fa-solid fa-chart-pie" },
   { id: "mempelai", name: "Data Mempelai", icon: "fa-solid fa-user-gear" },
-  { id: "budget", name: "Budget & Tabungan", icon: "fa-solid fa-wallet" },
+  { id: "budget", name: "Budget & Pengeluaran", icon: "fa-solid fa-wallet" },
+  { id: "tabungan", name: "Tabungan", icon: "fa-solid fa-piggy-bank" },
   { id: "seserahan", name: "Seserahan & Mahar", icon: "fa-solid fa-gift" },
   { id: "vendors", name: "Vendor & Venue", icon: "fa-solid fa-store" },
   { id: "administrasi", name: "Administrasi KUA", icon: "fa-solid fa-file-contract" },
@@ -39,6 +41,8 @@ const VENDOR_CATEGORIES = [
 ];
 
 /** Input harga inline: tampil format Rp saat diam, angka mentah saat diedit. */
+const todayISO = () => new Date().toISOString().slice(0, 10);
+
 function PriceCellInput({
   value,
   onCommit,
@@ -130,6 +134,7 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
   const [saving, setSaving] = useState(false);
 
   const [showBudgetModal, setShowBudgetModal] = useState(false);
+  const [showSavingsModal, setShowSavingsModal] = useState(false);
   const [showGuestModal, setShowGuestModal] = useState(false);
   const [showVendorModal, setShowVendorModal] = useState(false);
   const [showTimelineModal, setShowTimelineModal] = useState(false);
@@ -144,6 +149,13 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
     estimated: 0,
     actual: 0,
     status: "Belum",
+  });
+  const [savingsForm, setSavingsForm] = useState<SavingsEntry>({
+    id: "",
+    amount: 0,
+    source: "",
+    date: "",
+    note: "",
   });
   const [guestForm, setGuestForm] = useState({
     name: "",
@@ -268,6 +280,11 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
       ...s,
       vendors: s.vendors.filter((x) => x.id !== id),
     }));
+  const totalSavings = state.savings.reduce((sum, x) => sum + (x.amount || 0), 0);
+  const savingsBalance = totalSavings - totalExpenses;
+  const sortedSavings = [...state.savings].sort((a, b) =>
+    (b.date || "").localeCompare(a.date || "")
+  );
   const pendingChecklist = state.checklist.filter((c) => !c.done);
   const overallProgress = Math.round(
     (state.checklist.filter((c) => c.done).length / (state.checklist.length || 1)) * 100
@@ -521,12 +538,12 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
                     <i className="fa-solid fa-wallet text-xl" />
                   </div>
                   <div>
-                    <p className="text-xs text-slate-500 font-medium">Sisa Budget</p>
+                    <p className="text-xs text-slate-500 font-medium">Saldo Kas</p>
                     <p className="text-lg font-bold text-slate-800">
-                      {formatRupiah(state.totalBudget - totalExpenses)}
+                      {formatRupiah(savingsBalance)}
                     </p>
                     <p className="text-[10px] text-slate-400">
-                      Dari total {formatRupiah(state.totalBudget)}
+                      Tabungan masuk {formatRupiah(totalSavings)}
                     </p>
                   </div>
                 </div>
@@ -815,9 +832,9 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
               <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-4">
                 <div className="flex flex-wrap justify-between items-center gap-2">
                   <div>
-                    <h2 className="text-xl font-bold text-slate-800">Target Budget &amp; Tabungan</h2>
+                    <h2 className="text-xl font-bold text-slate-800">Budget &amp; Pengeluaran</h2>
                     <p className="text-xs text-slate-500">
-                      Monitor akumulasi tabungan vs estimasi total pengeluaran
+                      Target nabung, dana dari tabungan, dan realisasi pengeluaran
                     </p>
                   </div>
                   <button
@@ -837,10 +854,10 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
                     <i className="fa-solid fa-plus mr-1" /> Tambah Pos Pengeluaran
                   </button>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-2">
                   <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
                     <span className="text-xs text-slate-500 font-medium">
-                      Target Total Budget
+                      Target Nabung (Goal)
                     </span>
                     <div className="flex items-center space-x-2 mt-1">
                       <span className="text-slate-400 font-bold">Rp</span>
@@ -852,6 +869,17 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
                       />
                     </div>
                   </div>
+                  <div className="bg-blue-50/50 p-4 rounded-xl border border-blue-100">
+                    <span className="text-xs text-blue-600 font-medium">
+                      Budget Tersedia
+                    </span>
+                    <p className="text-xl font-bold text-blue-700 mt-1">
+                      {formatRupiah(totalSavings)}
+                    </p>
+                    <p className="text-[10px] text-blue-400">
+                      Otomatis dari {state.savings.length} setoran tabungan
+                    </p>
+                  </div>
                   <div className="bg-rose-50/50 p-4 rounded-xl border border-rose-100">
                     <span className="text-xs text-rose-600 font-medium">
                       Total Realisasi Pengeluaran
@@ -862,10 +890,13 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
                   </div>
                   <div className="bg-emerald-50/50 p-4 rounded-xl border border-emerald-100">
                     <span className="text-xs text-emerald-600 font-medium">
-                      Sisa Saldo Budget
+                      Saldo Kas
                     </span>
                     <p className="text-xl font-bold text-emerald-700 mt-1">
-                      {formatRupiah(state.totalBudget - totalExpenses)}
+                      {formatRupiah(savingsBalance)}
+                    </p>
+                    <p className="text-[10px] text-emerald-400">
+                      Masuk − keluar
                     </p>
                   </div>
                 </div>
@@ -934,6 +965,130 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
                           </td>
                         </tr>
                       ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </section>
+          )}
+
+          {activeTab === "tabungan" && (
+            <section className="space-y-6">
+              <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-4">
+                <div className="flex flex-wrap justify-between items-center gap-2">
+                  <div>
+                    <h2 className="text-xl font-bold text-slate-800">Tabungan Pernikahan</h2>
+                    <p className="text-xs text-slate-500">
+                      Catat uang masuk — otomatis jadi Budget Tersedia di tab Budget &amp; Pengeluaran
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setSavingsForm({
+                        id: "",
+                        amount: 0,
+                        source: "",
+                        date: todayISO(),
+                        note: "",
+                      });
+                      setShowSavingsModal(true);
+                    }}
+                    className="bg-rose-600 text-white px-3.5 py-2 rounded-xl text-xs font-semibold hover:bg-rose-700 transition"
+                  >
+                    <i className="fa-solid fa-plus mr-1" /> Tambah Setoran
+                  </button>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                  <div className="bg-emerald-50/50 p-4 rounded-xl border border-emerald-100">
+                    <span className="text-xs text-emerald-600 font-medium">
+                      Total Tabungan Masuk
+                    </span>
+                    <p className="text-xl font-bold text-emerald-700 mt-1">
+                      {formatRupiah(totalSavings)}
+                    </p>
+                  </div>
+                  <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                    <span className="text-xs text-slate-500 font-medium">
+                      Jumlah Setoran
+                    </span>
+                    <p className="text-xl font-bold text-slate-800 mt-1">
+                      {state.savings.length}x
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+                <div className="p-4 border-b border-slate-100 flex justify-between items-center">
+                  <h3 className="font-bold text-slate-800 text-sm">Riwayat Setoran</h3>
+                  <span className="text-xs text-slate-400">{state.savings.length} entri</span>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse text-xs sm:text-sm">
+                    <thead>
+                      <tr className="bg-slate-50 text-slate-500 uppercase text-[10px] tracking-wider font-semibold border-b border-slate-100">
+                        <th className="p-3">Tanggal</th>
+                        <th className="p-3">Dari</th>
+                        <th className="p-3 text-right">Nominal</th>
+                        <th className="p-3">Catatan</th>
+                        <th className="p-3 text-right">Aksi</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 text-slate-700">
+                      {sortedSavings.map((x) => (
+                        <tr key={x.id} className="hover:bg-slate-50">
+                          <td className="p-3 whitespace-nowrap">{formatDate(x.date)}</td>
+                          <td className="p-3 font-semibold text-slate-800">
+                            {x.source || "—"}
+                          </td>
+                          <td className="p-3 text-right">
+                            <PriceCellInput
+                              value={x.amount}
+                              label={`Nominal — ${x.source || x.date}`}
+                              onCommit={(n) =>
+                                update((s) => ({
+                                  ...s,
+                                  savings: s.savings.map((y) =>
+                                    y.id === x.id ? { ...y, amount: n } : y
+                                  ),
+                                }))
+                              }
+                            />
+                          </td>
+                          <td className="p-3 text-slate-500">{x.note || "—"}</td>
+                          <td className="p-3 text-right space-x-2 whitespace-nowrap">
+                            <button
+                              onClick={() => {
+                                setSavingsForm(x);
+                                setShowSavingsModal(true);
+                              }}
+                              className="text-slate-400 hover:text-rose-600"
+                              aria-label="Edit setoran"
+                            >
+                              <i className="fa-solid fa-pen" />
+                            </button>
+                            <button
+                              onClick={() =>
+                                update((s) => ({
+                                  ...s,
+                                  savings: s.savings.filter((y) => y.id !== x.id),
+                                }))
+                              }
+                              className="text-slate-400 hover:text-red-600"
+                              aria-label="Hapus setoran"
+                            >
+                              <i className="fa-solid fa-trash" />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                      {state.savings.length === 0 && (
+                        <tr>
+                          <td colSpan={5} className="p-6 text-center text-slate-400 text-xs">
+                            Belum ada setoran — klik &quot;Tambah Setoran&quot; untuk mulai catat uang masuk
+                          </td>
+                        </tr>
+                      )}
                     </tbody>
                   </table>
                 </div>
@@ -2021,6 +2176,97 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
               <option value="Lunas">Lunas</option>
             </select>
           </div>
+        </div>
+      </Modal>
+
+      <Modal
+        open={showSavingsModal}
+        title={savingsForm.id ? "Edit Setoran Tabungan" : "Tambah Setoran Tabungan"}
+        footer={
+          <>
+            <button
+              onClick={() => setShowSavingsModal(false)}
+              className="px-4 py-2 text-xs font-semibold text-slate-500 hover:bg-slate-100 rounded-xl"
+            >
+              Batal
+            </button>
+            <button
+              onClick={() => {
+                if (!savingsForm.amount || !savingsForm.date) return;
+                update((s) => {
+                  if (savingsForm.id) {
+                    return {
+                      ...s,
+                      savings: s.savings.map((x) =>
+                        x.id === savingsForm.id ? { ...savingsForm } : x
+                      ),
+                    };
+                  }
+                  return {
+                    ...s,
+                    savings: [...s.savings, { ...savingsForm, id: newId() }],
+                  };
+                }, false);
+                const msg = savingsForm.id
+                  ? "Setoran berhasil diperbarui!"
+                  : "Setoran berhasil ditambahkan!";
+                setShowSavingsModal(false);
+                showToast(msg);
+              }}
+              className="px-4 py-2 text-xs font-semibold bg-rose-600 text-white rounded-xl hover:bg-rose-700"
+            >
+              Simpan
+            </button>
+          </>
+        }
+      >
+        <div className="space-y-3 text-xs">
+          <div>
+            <label className="block font-medium mb-1">Tanggal Masuk</label>
+            <input
+              type="date"
+              value={savingsForm.date}
+              onChange={(e) => setSavingsForm({ ...savingsForm, date: e.target.value })}
+              className="w-full rounded-xl border-slate-200 p-2.5 border"
+            />
+          </div>
+          <div>
+            <label className="block font-medium mb-1">Dari Siapa (sumber dana)</label>
+            <input
+              type="text"
+              value={savingsForm.source}
+              onChange={(e) => setSavingsForm({ ...savingsForm, source: e.target.value })}
+              className="w-full rounded-xl border-slate-200 p-2.5 border"
+              placeholder="mis. Ayah &amp; Bunda, Gaji Bulanan, Tabungan Pribadi..."
+            />
+          </div>
+          <div>
+            <label className="block font-medium mb-1">Nominal Masuk (Rp)</label>
+            <input
+              type="number"
+              min={0}
+              value={savingsForm.amount}
+              onChange={(e) =>
+                setSavingsForm({ ...savingsForm, amount: Number(e.target.value) || 0 })
+              }
+              className="w-full rounded-xl border-slate-200 p-2.5 border"
+            />
+          </div>
+          <div>
+            <label className="block font-medium mb-1">Catatan (opsional)</label>
+            <textarea
+              rows={2}
+              value={savingsForm.note}
+              onChange={(e) => setSavingsForm({ ...savingsForm, note: e.target.value })}
+              className="w-full rounded-xl border-slate-200 p-2.5 border"
+              placeholder="mis. Setoran bulan ke-3, ampao, dll"
+            />
+          </div>
+          {!savingsForm.amount || !savingsForm.date ? (
+            <p className="text-[11px] text-amber-600">
+              Tanggal &amp; nominal wajib diisi
+            </p>
+          ) : null}
         </div>
       </Modal>
 

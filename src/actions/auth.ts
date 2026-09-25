@@ -54,6 +54,9 @@ async function createWeddingWithSeed(userId: string) {
     db()
       .from("BudgetItem")
       .insert(s.budgetList.map((b, i) => ({ ...b, weddingId, sortOrder: i }))),
+    db()
+      .from("SavingsEntry")
+      .insert(s.savings.map((x, i) => ({ ...x, weddingId, sortOrder: i }))),
     db().from("SeserahanItem").insert([
       ...s.maharItems.map((x, i) => ({
         id: x.id,
@@ -240,10 +243,18 @@ const idSchema = z.string().min(1).max(64);
 const budgetItemSchema = z.object({
   id: idSchema,
   category: z.string().max(80),
-  item: z.string().max(300),
+  item: z.string().max(200),
   estimated: z.coerce.number().int().min(0),
   actual: z.coerce.number().int().min(0),
-  status: z.string().max(40),
+  status: z.string().max(20),
+});
+
+const savingsSchema = z.object({
+  id: idSchema,
+  amount: z.coerce.number().int().min(0),
+  source: z.string().max(120),
+  date: z.string().max(20),
+  note: z.string().max(300),
 });
 
 const seserahanItemSchema = z.object({
@@ -318,6 +329,7 @@ const weddingStateSchema = z.object({
     cpw: brideProfileSchema,
   }),
   budgetList: z.array(budgetItemSchema).max(500),
+  savings: z.array(savingsSchema).max(1000),
   maharItems: z.array(seserahanItemSchema).max(200),
   seserahanCppToCpw: z.array(seserahanItemSchema).max(200),
   seserahanCpwToCpp: z.array(seserahanItemSchema).max(200),
@@ -350,6 +362,7 @@ export async function saveWeddingAction(input: WeddingState): Promise<SaveResult
     const [
       sideRows,
       budgetRows,
+      savingsRows,
       sesRows,
       vendorRows,
       docRows,
@@ -360,6 +373,7 @@ export async function saveWeddingAction(input: WeddingState): Promise<SaveResult
     ] = await Promise.all([
       pick(db().from("BrideSide").select("id, side").eq("weddingId", wid)),
       pick(db().from("BudgetItem").select("id").eq("weddingId", wid)),
+      pick(db().from("SavingsEntry").select("id").eq("weddingId", wid)),
       pick(db().from("SeserahanItem").select("id").eq("weddingId", wid)),
       pick(db().from("Vendor").select("id").eq("weddingId", wid)),
       pick(db().from("AdminDoc").select("id").eq("weddingId", wid)),
@@ -375,6 +389,11 @@ export async function saveWeddingAction(input: WeddingState): Promise<SaveResult
     const budgetIds = existingIds(budgetRows);
     const delBudget = [...budgetIds].filter(
       (id) => !data.budgetList.some((b) => b.id === id)
+    );
+
+    const savingsIds = existingIds(savingsRows);
+    const delSavings = [...savingsIds].filter(
+      (id) => !data.savings.some((x) => x.id === id)
     );
 
     const sesAll = [
@@ -459,6 +478,18 @@ export async function saveWeddingAction(input: WeddingState): Promise<SaveResult
             weddingId: wid,
             sortOrder: i,
           })),
+          { onConflict: "id" }
+        )
+    );
+
+    if (delSavings.length) {
+      ops.push(db().from("SavingsEntry").delete().in("id", delSavings));
+    }
+    ops.push(
+      db()
+        .from("SavingsEntry")
+        .upsert(
+          data.savings.map((x, i) => ({ ...x, weddingId: wid, sortOrder: i })),
           { onConflict: "id" }
         )
     );
@@ -605,6 +636,7 @@ export async function getWeddingForUser(): Promise<WeddingState | null> {
   const [
     brideSides,
     budgetItems,
+    savingsEntries,
     seserahanItems,
     vendors,
     adminDocs,
@@ -617,6 +649,13 @@ export async function getWeddingForUser(): Promise<WeddingState | null> {
     pick(
       db()
         .from("BudgetItem")
+        .select("*")
+        .eq("weddingId", wid)
+        .order("sortOrder")
+    ),
+    pick(
+      db()
+        .from("SavingsEntry")
         .select("*")
         .eq("weddingId", wid)
         .order("sortOrder")
@@ -684,6 +723,7 @@ export async function getWeddingForUser(): Promise<WeddingState | null> {
     totalBudget: w.totalBudget,
     brideData: { cpp: pickBride(cpp), cpw: pickBride(cpw) },
     budgetList: budgetItems.map((b) => ({ id: b.id, category: b.category, item: b.item, estimated: b.estimated, actual: b.actual, status: b.status })),
+    savings: savingsEntries.map((x) => ({ id: x.id, amount: x.amount ?? 0, source: x.source ?? "", date: x.date ?? "", note: x.note ?? "" })),
     maharItems: seserahanItems.filter((s) => s.section === "mahar").map((s) => ({ id: s.id, title: s.title, cost: s.cost, ready: s.ready, link: s.link })),
     seserahanCppToCpw: seserahanItems.filter((s) => s.section === "cppToCpw").map((s) => ({ id: s.id, title: s.title, cost: s.cost, ready: s.ready, link: s.link })),
     seserahanCpwToCpp: seserahanItems.filter((s) => s.section === "cpwToCpp").map((s) => ({ id: s.id, title: s.title, cost: s.cost, ready: s.ready, link: s.link })),

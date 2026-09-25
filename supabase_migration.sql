@@ -195,3 +195,18 @@ alter table "PasswordResetToken" enable row level security;
 alter table "AdminDoc" add column if not exists "doneCpp" boolean not null default false;
 alter table "AdminDoc" add column if not exists "doneCpw" boolean not null default false;
 alter table "AdminDoc" add column if not exists "status" text;
+
+-- ---------- SavingsEntry (riwayat setoran tabungan pernikahan) ----------
+-- Diisi via tab "Tabungan"; totalnya otomatis jadi Budget Tersedia di tab Budget.
+create table if not exists "SavingsEntry" (
+  "id"        text primary key,
+  "weddingId" text not null references "Wedding" ("id") on delete cascade,
+  "amount"    integer not null default 0,
+  "source"    text not null default '',
+  "date"      text not null default '',
+  "note"      text not null default '',
+  "sortOrder" integer not null default 0,
+  "createdAt" timestamptz not null default now()
+);
+create index if not exists "SavingsEntry_weddingId_idx" on "SavingsEntry" ("weddingId");
+alter table "SavingsEntry" enable row level security;

@@ -2,6 +2,7 @@ export type TabId =
   | "dashboard"
   | "mempelai"
   | "budget"
+  | "tabungan"
   | "seserahan"
   | "vendors"
   | "administrasi"
@@ -63,6 +64,14 @@ export function isKuaStep(doc: AdminDoc): boolean {
   return doc.id.startsWith("kua-");
 }
 
+export type SavingsEntry = {
+  id: string;
+  amount: number;
+  source: string;
+  date: string;
+  note: string;
+};
+
 export type Guest = {
   id: string;
   name: string;
@@ -108,6 +117,7 @@ export type WeddingState = {
     cpw: BrideProfile;
   };
   budgetList: BudgetItem[];
+  savings: SavingsEntry[];
   maharItems: SeserahanItem[];
   seserahanCppToCpw: SeserahanItem[];
   seserahanCpwToCpp: SeserahanItem[];
