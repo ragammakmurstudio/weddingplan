@@ -384,7 +384,7 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
             </div>
           </div>
 
-          <div className="flex items-center space-x-2">
+          <div className="hidden lg:flex items-center space-x-2">
             <span
               className={`text-[10px] font-semibold px-2 py-1 rounded-md ${
                 saving ? "bg-amber-100 text-amber-700" : "bg-emerald-100 text-emerald-700"
@@ -462,16 +462,55 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
                 </button>
               ))}
             </nav>
-            <div className="p-3 border-t border-slate-100">
-              <div className="flex justify-between items-center text-xs mb-1.5 font-medium">
-                <span className="text-slate-500">Progress Persiapan</span>
-                <span className="text-rose-600 font-bold">{overallProgress}%</span>
+            <div className="p-3 border-t border-slate-100 space-y-3">
+              <div className="space-y-2">
+                <span
+                  className={`inline-flex items-center space-x-1.5 text-[10px] font-semibold px-2 py-1 rounded-md ${
+                    saving ? "bg-amber-100 text-amber-700" : "bg-emerald-100 text-emerald-700"
+                  }`}
+                >
+                  <i
+                    className={`${
+                      saving ? "fa-solid fa-hourglass-half animate-pulse" : "fa-solid fa-circle-check"
+                    }`}
+                  />
+                  <span>{saving ? "Menyimpan..." : "Tersimpan"}</span>
+                </span>
+                <p className="text-xs text-slate-500 font-medium truncate">
+                  {userName || userEmail}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setNavOpen(false);
+                    setShowResetModal(true);
+                  }}
+                  className="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl font-medium text-sm text-slate-600 hover:bg-red-50 hover:text-red-600 transition"
+                >
+                  <i className="fa-solid fa-rotate-right w-5 text-center text-slate-400" />
+                  <span>Reset Data Demo</span>
+                </button>
+                <form action={logoutAction} className="w-full">
+                  <button
+                    type="submit"
+                    className="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl font-medium text-sm text-slate-600 hover:bg-red-50 hover:text-red-600 transition"
+                  >
+                    <i className="fa-solid fa-right-from-bracket w-5 text-center text-slate-400" />
+                    <span>Keluar</span>
+                  </button>
+                </form>
               </div>
-              <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
-                <div
-                  className="bg-rose-500 h-2 rounded-full transition-all duration-500"
-                  style={{ width: `${overallProgress}%` }}
-                />
+              <div>
+                <div className="flex justify-between items-center text-xs mb-1.5 font-medium">
+                  <span className="text-slate-500">Progress Persiapan</span>
+                  <span className="text-rose-600 font-bold">{overallProgress}%</span>
+                </div>
+                <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+                  <div
+                    className="bg-rose-500 h-2 rounded-full transition-all duration-500"
+                    style={{ width: `${overallProgress}%` }}
+                  />
+                </div>
               </div>
             </div>
           </aside>
