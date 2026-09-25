@@ -38,6 +38,32 @@ const VENDOR_CATEGORIES = [
   "Lainnya",
 ];
 
+/** Input harga inline: tampil format Rp saat diam, angka mentah saat diedit. */
+function PriceCellInput({
+  value,
+  onCommit,
+  label,
+}: {
+  value: number;
+  onCommit: (n: number) => void;
+  label: string;
+}) {
+  const [focused, setFocused] = useState(false);
+  return (
+    <input
+      type="text"
+      inputMode="numeric"
+      aria-label={label}
+      value={focused ? (value ? String(value) : "") : formatRupiah(value)}
+      placeholder="0"
+      onFocus={() => setFocused(true)}
+      onBlur={() => setFocused(false)}
+      onChange={(e) => onCommit(Number(e.target.value.replace(/\D/g, "")) || 0)}
+      className="w-36 text-right bg-transparent border border-transparent hover:border-slate-200 focus:border-rose-300 focus:ring-1 focus:ring-rose-500 rounded-lg px-2 py-1 text-xs sm:text-sm"
+    />
+  );
+}
+
 type Props = {
   initial: WeddingState;
   userEmail: string;
@@ -1257,27 +1283,20 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
                               <td className="px-4 py-3 border-b border-slate-100 text-slate-600">
                                 {v.category}
                               </td>
-                              <td className="px-4 py-3 border-b border-slate-100 text-slate-700">
-                                <input
-                                  type="number"
-                                  min={0}
-                                  aria-label={`Harga — ${v.name}`}
+                              <td className="px-4 py-3 border-b border-slate-100 text-slate-700 text-right">
+                                <PriceCellInput
                                   value={v.price}
-                                  onChange={(e) =>
+                                  label={`Harga — ${v.name}`}
+                                  onCommit={(n) =>
                                     update((s) => ({
                                       ...s,
                                       vendors: s.vendors.map((x) =>
                                         x.id === v.id
-                                          ? {
-                                              ...x,
-                                              price:
-                                                Number(e.target.value) || 0,
-                                            }
+                                          ? { ...x, price: n }
                                           : x
                                       ),
                                     }))
                                   }
-                                  className="w-28 text-right bg-transparent border border-transparent hover:border-slate-200 focus:border-rose-300 focus:ring-1 focus:ring-rose-500 rounded-lg px-2 py-1 text-xs sm:text-sm"
                                 />
                               </td>
                               <td className="px-4 py-3 border-b border-slate-100">
