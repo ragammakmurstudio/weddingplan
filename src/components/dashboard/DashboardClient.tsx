@@ -834,7 +834,7 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
                   <div>
                     <h2 className="text-xl font-bold text-slate-800">Budget &amp; Pengeluaran</h2>
                     <p className="text-xs text-slate-500">
-                      Target nabung, dana dari tabungan, dan realisasi pengeluaran
+                      Dana dari tabungan dan realisasi pengeluaran pernikahan
                     </p>
                   </div>
                   <button
@@ -854,21 +854,7 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
                     <i className="fa-solid fa-plus mr-1" /> Tambah Pos Pengeluaran
                   </button>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-2">
-                  <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
-                    <span className="text-xs text-slate-500 font-medium">
-                      Target Nabung (Goal)
-                    </span>
-                    <div className="flex items-center space-x-2 mt-1">
-                      <span className="text-slate-400 font-bold">Rp</span>
-                      <input
-                        type="number"
-                        value={state.totalBudget}
-                        onChange={(e) => update({ totalBudget: Number(e.target.value) || 0 })}
-                        className="text-xl font-bold text-slate-800 bg-transparent border-b border-dashed border-slate-400 focus:outline-none w-full"
-                      />
-                    </div>
-                  </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
                   <div className="bg-blue-50/50 p-4 rounded-xl border border-blue-100">
                     <span className="text-xs text-blue-600 font-medium">
                       Budget Tersedia
@@ -998,7 +984,21 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
                     <i className="fa-solid fa-plus mr-1" /> Tambah Setoran
                   </button>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
+                  <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                    <span className="text-xs text-slate-500 font-medium">
+                      Target Nabung (Goal)
+                    </span>
+                    <div className="flex items-center space-x-2 mt-1">
+                      <span className="text-slate-400 font-bold">Rp</span>
+                      <input
+                        type="number"
+                        value={state.totalBudget}
+                        onChange={(e) => update({ totalBudget: Number(e.target.value) || 0 })}
+                        className="text-xl font-bold text-slate-800 bg-transparent border-b border-dashed border-slate-400 focus:outline-none w-full"
+                      />
+                    </div>
+                  </div>
                   <div className="bg-emerald-50/50 p-4 rounded-xl border border-emerald-100">
                     <span className="text-xs text-emerald-600 font-medium">
                       Total Tabungan Masuk
