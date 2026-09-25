@@ -47,10 +47,12 @@ function PriceCellInput({
   value,
   onCommit,
   label,
+  className,
 }: {
   value: number;
   onCommit: (n: number) => void;
   label: string;
+  className?: string;
 }) {
   const [focused, setFocused] = useState(false);
   return (
@@ -63,7 +65,10 @@ function PriceCellInput({
       onFocus={() => setFocused(true)}
       onBlur={() => setFocused(false)}
       onChange={(e) => onCommit(Number(e.target.value.replace(/\D/g, "")) || 0)}
-      className="w-36 text-right bg-transparent border border-transparent hover:border-slate-200 focus:border-rose-300 focus:ring-1 focus:ring-rose-500 rounded-lg px-2 py-1 text-xs sm:text-sm"
+      className={
+        className ??
+        "w-36 text-right bg-transparent border border-transparent hover:border-slate-200 focus:border-rose-300 focus:ring-1 focus:ring-rose-500 rounded-lg px-2 py-1 text-xs sm:text-sm"
+      }
     />
   );
 }
@@ -285,6 +290,10 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
   const sortedSavings = [...state.savings].sort((a, b) =>
     (b.date || "").localeCompare(a.date || "")
   );
+  const goal = state.totalBudget;
+  const goalPct = goal > 0 ? Math.round((totalSavings / goal) * 100) : 0;
+  const goalBarPct = Math.min(100, goalPct);
+  const goalSurplus = goal > 0 && totalSavings >= goal;
   const pendingChecklist = state.checklist.filter((c) => !c.done);
   const overallProgress = Math.round(
     (state.checklist.filter((c) => c.done).length / (state.checklist.length || 1)) * 100
@@ -985,19 +994,42 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
                   </button>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
-                  <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                  <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-2">
                     <span className="text-xs text-slate-500 font-medium">
                       Target Nabung (Goal)
                     </span>
-                    <div className="flex items-center space-x-2 mt-1">
-                      <span className="text-slate-400 font-bold">Rp</span>
-                      <input
-                        type="number"
-                        value={state.totalBudget}
-                        onChange={(e) => update({ totalBudget: Number(e.target.value) || 0 })}
-                        className="text-xl font-bold text-slate-800 bg-transparent border-b border-dashed border-slate-400 focus:outline-none w-full"
-                      />
-                    </div>
+                    <PriceCellInput
+                      value={state.totalBudget}
+                      label="Target nabung"
+                      onCommit={(n) => update({ totalBudget: n })}
+                      className="w-full text-left bg-transparent border-b border-dashed border-slate-400 hover:border-rose-300 focus:border-rose-400 focus:ring-0 rounded-none px-0 py-0.5 text-xl font-bold text-slate-800"
+                    />
+                    {goal > 0 && (
+                      <>
+                        <div className="h-2 rounded-full bg-slate-200 overflow-hidden">
+                          <div
+                            className={`h-full rounded-full transition-all ${
+                              goalSurplus ? "bg-emerald-500" : "bg-rose-500"
+                            }`}
+                            style={{ width: `${goalBarPct}%` }}
+                          />
+                        </div>
+                        <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1 text-[11px]">
+                          <span className="text-slate-500 font-semibold">
+                            Tercapai {goalPct}%
+                          </span>
+                          <span
+                            className={`font-bold ${
+                              goalSurplus ? "text-emerald-600" : "text-amber-600"
+                            }`}
+                          >
+                            {goalSurplus
+                              ? `Surplus: ${formatRupiah(totalSavings - goal)}`
+                              : `Kurangan: ${formatRupiah(goal - totalSavings)}`}
+                          </span>
+                        </div>
+                      </>
+                    )}
                   </div>
                   <div className="bg-emerald-50/50 p-4 rounded-xl border border-emerald-100">
                     <span className="text-xs text-emerald-600 font-medium">
