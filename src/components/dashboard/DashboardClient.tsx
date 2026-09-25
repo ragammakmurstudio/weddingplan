@@ -1216,7 +1216,7 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
                       <i className="fa-solid fa-clipboard-check text-slate-400" /> Kandidat Vendor
                     </h3>
                     <p className="text-xs text-slate-500">
-                      Vendor survei / pitching / batal — jadikan Deal lewat tombol edit
+                      Klik kolom Status untuk ubah langsung — pindah ke Deal otomatis naik ke Vendor Final
                     </p>
                   </div>
                   {candidateVendors.length === 0 ? (
@@ -1261,11 +1261,27 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
                                 {formatRupiah(v.price)}
                               </td>
                               <td className="px-4 py-3 border-b border-slate-100">
-                                <span
-                                  className={`${getVendorBadgeClass(v.status)} text-[10px] px-2 py-0.5 rounded-full font-bold`}
+                                <select
+                                  aria-label={`Status — ${v.name}`}
+                                  value={v.status}
+                                  onChange={(e) =>
+                                    update((s) => ({
+                                      ...s,
+                                      vendors: s.vendors.map((x) =>
+                                        x.id === v.id
+                                          ? { ...x, status: e.target.value }
+                                          : x
+                                      ),
+                                    }))
+                                  }
+                                  className={`${getVendorBadgeClass(
+                                    v.status
+                                  )} text-[10px] px-2 py-1 pr-6 rounded-full font-bold cursor-pointer focus:ring-2 focus:ring-rose-500`}
                                 >
-                                  {v.status}
-                                </span>
+                                  <option>Survey / Pitching</option>
+                                  <option>Deal</option>
+                                  <option>Batal</option>
+                                </select>
                               </td>
                               <td className="px-4 py-3 border-b border-slate-100 text-right whitespace-nowrap">
                                 <div className="inline-flex items-center gap-3">
