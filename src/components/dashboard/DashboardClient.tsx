@@ -942,7 +942,7 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
                   <span className="text-xs text-slate-400">{state.budgetList.length} Pos</span>
                 </div>
                 <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse text-xs sm:text-sm">
+                  <table className="hidden sm:table w-full text-left border-collapse text-sm">
                     <thead>
                       <tr className="bg-slate-50 text-slate-500 uppercase text-[10px] tracking-wider font-semibold border-b border-slate-100">
                         <th className="p-3">Kategori</th>
@@ -969,6 +969,47 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
                           <td className="p-3">
                             <span
                               className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                                item.status === "Lunas"
+                                  ? "bg-emerald-100 text-emerald-700"
+                                  : item.status === "DP"
+                                    ? "bg-amber-100 text-amber-700"
+                                    : "bg-rose-100 text-rose-700"
+                              }`}
+                            >
+                              {item.status}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  <table className="sm:hidden w-full text-left border-collapse text-xs">
+                    <thead>
+                      <tr className="bg-slate-50 text-slate-500 uppercase text-[10px] tracking-wider font-semibold border-b border-slate-100">
+                        <th className="p-3">Pos Anggaran</th>
+                        <th className="p-3 text-right">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 text-slate-700">
+                      {state.budgetList.map((item) => (
+                        <tr
+                          key={item.id}
+                          onClick={() => {
+                            setBudgetForm(item);
+                            setShowBudgetModal(true);
+                          }}
+                          className="hover:bg-rose-50 cursor-pointer"
+                        >
+                          <td className="p-3">
+                            <p className="font-semibold text-rose-600">{item.category}</p>
+                            <p className="font-medium text-slate-800">{item.item}</p>
+                            <p className="text-[11px] text-slate-500 mt-0.5">
+                              Est {formatRupiah(item.estimated)} • Real {formatRupiah(item.actual)}
+                            </p>
+                          </td>
+                          <td className="p-3 text-right align-top">
+                            <span
+                              className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-bold ${
                                 item.status === "Lunas"
                                   ? "bg-emerald-100 text-emerald-700"
                                   : item.status === "DP"
