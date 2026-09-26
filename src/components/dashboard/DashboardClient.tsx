@@ -434,6 +434,18 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
                 <i className="fa-solid fa-xmark" />
               </button>
             </div>
+            <div className="px-3 pt-3 pb-2 border-b border-slate-100">
+              <div className="flex justify-between items-center text-xs mb-1.5 font-medium">
+                <span className="text-slate-500">Progress Persiapan</span>
+                <span className="text-rose-600 font-bold">{overallProgress}%</span>
+              </div>
+              <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+                <div
+                  className="bg-rose-500 h-2 rounded-full transition-all duration-500"
+                  style={{ width: `${overallProgress}%` }}
+                />
+              </div>
+            </div>
             <nav className="flex-1 overflow-y-auto p-3 space-y-1">
               {TABS.map((tab) => (
                 <button
@@ -496,18 +508,6 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
                     <span>Keluar</span>
                   </button>
                 </form>
-              </div>
-              <div>
-                <div className="flex justify-between items-center text-xs mb-1.5 font-medium">
-                  <span className="text-slate-500">Progress Persiapan</span>
-                  <span className="text-rose-600 font-bold">{overallProgress}%</span>
-                </div>
-                <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
-                  <div
-                    className="bg-rose-500 h-2 rounded-full transition-all duration-500"
-                    style={{ width: `${overallProgress}%` }}
-                  />
-                </div>
               </div>
             </div>
           </aside>
