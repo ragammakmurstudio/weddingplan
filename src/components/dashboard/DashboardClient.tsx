@@ -1661,16 +1661,16 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
                 </div>
 
                 <div className="overflow-x-auto">
-                  <table className="w-full border-collapse min-w-[480px]">
+                  <table className="w-full border-collapse">
                     <thead>
                       <tr>
-                        <th className="bg-rose-600 text-white text-left px-4 py-3 rounded-tl-xl text-xs sm:text-sm font-bold">
+                        <th className="bg-rose-600 text-white text-left px-3 py-3 rounded-tl-xl text-xs sm:text-sm font-bold">
                           Administrasi Persiapan Menikah
                         </th>
-                        <th className="bg-rose-600 text-white px-4 py-3 text-xs sm:text-sm font-bold w-20">
+                        <th className="bg-rose-600 text-white px-3 py-3 text-xs sm:text-sm font-bold w-14">
                           CPP
                         </th>
-                        <th className="bg-rose-600 text-white px-4 py-3 rounded-tr-xl text-xs sm:text-sm font-bold w-20">
+                        <th className="bg-rose-600 text-white px-3 py-3 rounded-tr-xl text-xs sm:text-sm font-bold w-14">
                           CPW
                         </th>
                       </tr>
@@ -1685,10 +1685,10 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
                               i % 2 === 0 ? "bg-rose-50/70" : "bg-white"
                             }
                           >
-                            <td className="px-4 py-3 text-xs sm:text-sm text-slate-700 border-b border-rose-100">
+                            <td className="px-3 py-3 text-xs sm:text-sm text-slate-700 border-b border-rose-100">
                               {doc.title}
                             </td>
-                            <td className="px-4 py-3 border-b border-rose-100 text-center">
+                            <td className="px-3 py-3 border-b border-rose-100 text-center">
                               <input
                                 type="checkbox"
                                 aria-label={`CPP — ${doc.title}`}
@@ -1706,7 +1706,7 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
                                 className="rounded text-rose-600 w-4 h-4 focus:ring-rose-500 align-middle"
                               />
                             </td>
-                            <td className="px-4 py-3 border-b border-rose-100 text-center">
+                            <td className="px-3 py-3 border-b border-rose-100 text-center">
                               <input
                                 type="checkbox"
                                 aria-label={`CPW — ${doc.title}`}
@@ -1737,12 +1737,12 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
                                 : "bg-white"
                             }
                           >
-                            <td className="px-4 py-3 text-xs sm:text-sm font-semibold text-slate-700 border-b border-rose-100">
+                            <td className="px-3 py-3 text-xs sm:text-sm font-semibold text-slate-700 border-b border-rose-100">
                               {doc.title}
                             </td>
                             <td
                               colSpan={2}
-                              className="px-4 py-3 border-b border-rose-100"
+                              className="px-3 py-3 border-b border-rose-100"
                             >
                               <select
                                 aria-label={doc.title}
