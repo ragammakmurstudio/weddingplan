@@ -914,8 +914,8 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
                   </button>
                 </div>
                 {hasBudgetData ? (
-                  <div className="flex flex-col sm:flex-row items-center gap-6 pt-2">
-                    <div className="relative w-full sm:w-[300px] shrink-0 h-[240px] sm:h-[300px]">
+                  <div className="flex flex-row items-center gap-3 sm:gap-6 pt-2">
+                    <div className="relative w-[130px] sm:w-[300px] shrink-0 h-[150px] sm:h-[300px]">
                       <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
                           <Pie
@@ -934,55 +934,57 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
                         </PieChart>
                       </ResponsiveContainer>
                       <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                        <span className="text-[10px] text-blue-500 font-semibold">
+                        <span className="text-[8px] sm:text-[10px] text-blue-500 font-semibold">
                           Budget Tersedia
                         </span>
-                        <span className="text-sm font-bold text-blue-700">
+                        <span className="text-[10px] sm:text-sm font-bold text-blue-700">
                           {formatRupiah(totalSavings)}
                         </span>
                       </div>
                     </div>
-                    <div className="flex-1 w-full space-y-3">
-                      <div className="flex items-start gap-3">
-                        <span className="w-3 h-3 rounded-full bg-rose-500 mt-1.5 shrink-0" />
+                    <div className="flex-1 w-full space-y-2 sm:space-y-3">
+                      <div className="flex items-start gap-2 sm:gap-3">
+                        <span className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-rose-500 mt-1 sm:mt-1.5 shrink-0" />
                         <div className="min-w-0">
-                          <p className="text-sm font-bold text-slate-800">
+                          <p className="text-[11px] sm:text-sm font-bold text-slate-800">
                             Total Realisasi Pengeluaran
                           </p>
-                          <p className="text-lg font-bold text-rose-600">
+                          <p className="text-xs sm:text-lg font-bold text-rose-600">
                             {formatRupiah(totalExpenses)}
                           </p>
-                          <p className="text-[11px] text-slate-400">
+                          <p className="text-[9px] sm:text-[11px] text-slate-400">
                             {realisasiPct}% dari budget tersedia
                           </p>
                         </div>
                       </div>
-                      <div className="flex items-start gap-3">
-                        <span className="w-3 h-3 rounded-full bg-emerald-500 mt-1.5 shrink-0" />
+                      <div className="flex items-start gap-2 sm:gap-3">
+                        <span className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-emerald-500 mt-1 sm:mt-1.5 shrink-0" />
                         <div className="min-w-0">
-                          <p className="text-sm font-bold text-slate-800">Saldo Kas</p>
+                          <p className="text-[11px] sm:text-sm font-bold text-slate-800">
+                            Saldo Kas
+                          </p>
                           <p
-                            className={`text-lg font-bold ${
+                            className={`text-xs sm:text-lg font-bold ${
                               savingsBalance >= 0 ? "text-emerald-600" : "text-rose-600"
                             }`}
                           >
                             {formatRupiah(savingsBalance)}
                           </p>
-                          <p className="text-[11px] text-slate-400">
+                          <p className="text-[9px] sm:text-[11px] text-slate-400">
                             {saldoPct}% sisa dari budget tersedia
                           </p>
                         </div>
                       </div>
-                      <div className="border-t border-slate-100 pt-3 flex items-start gap-3">
-                        <span className="w-3 h-3 rounded-full bg-blue-500 mt-1.5 shrink-0" />
+                      <div className="border-t border-slate-100 pt-2 sm:pt-3 flex items-start gap-2 sm:gap-3">
+                        <span className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-blue-500 mt-1 sm:mt-1.5 shrink-0" />
                         <div className="min-w-0">
-                          <p className="text-sm font-bold text-slate-800">
+                          <p className="text-[11px] sm:text-sm font-bold text-slate-800">
                             Budget Tersedia
                           </p>
-                          <p className="text-lg font-bold text-blue-700">
+                          <p className="text-xs sm:text-lg font-bold text-blue-700">
                             {formatRupiah(totalSavings)}
                           </p>
-                          <p className="text-[11px] text-slate-400">
+                          <p className="text-[9px] sm:text-[11px] text-slate-400">
                             Otomatis dari {state.savings.length} setoran tabungan
                           </p>
                         </div>
