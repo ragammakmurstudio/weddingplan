@@ -914,6 +914,7 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
                   </button>
                 </div>
                 {hasBudgetData ? (
+                  <>
                   <div className="flex flex-row items-center gap-3 sm:gap-6 pt-2">
                     <div className="relative w-[130px] sm:w-[300px] shrink-0 h-[150px] sm:h-[300px]">
                       <ResponsiveContainer width="100%" height="100%">
@@ -975,23 +976,22 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
                           </p>
                         </div>
                       </div>
-                      <div className="border-t border-slate-100 pt-2 sm:pt-3">
-                        <div className="bg-blue-50 border border-blue-100 rounded-xl px-2.5 py-2 space-y-0.5">
-                          <div className="flex items-center justify-between gap-2">
-                            <span className="text-[11px] sm:text-sm font-bold text-blue-700">
-                              Budget Tersedia
-                            </span>
-                            <span className="text-xs sm:text-base font-bold text-blue-800 text-right shrink-0">
-                              {formatRupiah(totalSavings)}
-                            </span>
-                          </div>
-                          <p className="text-[9px] sm:text-[11px] text-blue-400">
-                            Otomatis dari {state.savings.length} setoran tabungan
-                          </p>
-                        </div>
-                      </div>
                     </div>
                   </div>
+                  <div className="bg-blue-50 border border-blue-100 rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+                    <div className="min-w-0">
+                      <p className="text-xs sm:text-sm font-bold text-blue-700">
+                        Budget Tersedia
+                      </p>
+                      <p className="text-[9px] sm:text-[11px] text-blue-400">
+                        Otomatis dari {state.savings.length} setoran tabungan
+                      </p>
+                    </div>
+                    <p className="text-sm sm:text-lg font-bold text-blue-800 shrink-0">
+                      {formatRupiah(totalSavings)}
+                    </p>
+                  </div>
+                  </>
                 ) : (
                   <p className="text-xs text-slate-400 text-center py-8">
                     Belum ada data — tambah setoran tabungan &amp; pos pengeluaran untuk
