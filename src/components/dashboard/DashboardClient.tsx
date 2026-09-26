@@ -1092,7 +1092,7 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
                   <span className="text-xs text-slate-400">{state.savings.length} entri</span>
                 </div>
                 <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse text-xs sm:text-sm">
+                  <table className="hidden sm:table w-full text-left border-collapse text-sm">
                     <thead>
                       <tr className="bg-slate-50 text-slate-500 uppercase text-[10px] tracking-wider font-semibold border-b border-slate-100">
                         <th className="p-3">Tanggal</th>
@@ -1153,6 +1153,80 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
                       {state.savings.length === 0 && (
                         <tr>
                           <td colSpan={5} className="p-6 text-center text-slate-400 text-xs">
+                            Belum ada setoran — klik &quot;Tambah Setoran&quot; untuk mulai catat uang masuk
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                  <table className="sm:hidden w-full text-left border-collapse text-xs">
+                    <thead>
+                      <tr className="bg-slate-50 text-slate-500 uppercase text-[10px] tracking-wider font-semibold border-b border-slate-100">
+                        <th className="p-3">Setoran</th>
+                        <th className="p-3 text-right">Nominal</th>
+                        <th className="p-3 text-right">Aksi</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 text-slate-700">
+                      {sortedSavings.map((x) => (
+                        <tr key={x.id} className="hover:bg-slate-50">
+                          <td className="p-3">
+                            <p className="text-slate-600 font-medium">
+                              {formatDate(x.date)}
+                            </p>
+                            <p className="font-semibold text-slate-800">
+                              {x.source || "—"}
+                            </p>
+                            {x.note && (
+                              <p className="text-[11px] text-slate-500 mt-0.5">
+                                {x.note}
+                              </p>
+                            )}
+                          </td>
+                          <td className="p-3 text-right align-top">
+                            <PriceCellInput
+                              value={x.amount}
+                              label={`Nominal — ${x.source || x.date}`}
+                              onCommit={(n) =>
+                                update((s) => ({
+                                  ...s,
+                                  savings: s.savings.map((y) =>
+                                    y.id === x.id ? { ...y, amount: n } : y
+                                  ),
+                                }))
+                              }
+                              className="w-28 text-right bg-transparent border border-transparent hover:border-slate-200 focus:border-rose-300 focus:ring-1 focus:ring-rose-500 rounded-lg px-2 py-1 text-xs"
+                            />
+                          </td>
+                          <td className="p-3 text-right align-top space-x-2 whitespace-nowrap">
+                            <button
+                              onClick={() => {
+                                setSavingsForm(x);
+                                setShowSavingsModal(true);
+                              }}
+                              className="text-slate-400 hover:text-rose-600"
+                              aria-label="Edit setoran"
+                            >
+                              <i className="fa-solid fa-pen" />
+                            </button>
+                            <button
+                              onClick={() =>
+                                update((s) => ({
+                                  ...s,
+                                  savings: s.savings.filter((y) => y.id !== x.id),
+                                }))
+                              }
+                              className="text-slate-400 hover:text-red-600"
+                              aria-label="Hapus setoran"
+                            >
+                              <i className="fa-solid fa-trash" />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                      {state.savings.length === 0 && (
+                        <tr>
+                          <td colSpan={3} className="p-6 text-center text-slate-400 text-xs">
                             Belum ada setoran — klik &quot;Tambah Setoran&quot; untuk mulai catat uang masuk
                           </td>
                         </tr>
