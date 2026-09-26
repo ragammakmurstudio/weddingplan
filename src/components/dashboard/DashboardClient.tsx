@@ -1779,7 +1779,7 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
                   />
                 </div>
                 <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse text-xs sm:text-sm">
+                  <table className="hidden sm:table w-full text-left border-collapse text-sm">
                     <thead>
                       <tr className="bg-slate-50 text-slate-500 uppercase text-[10px] tracking-wider font-semibold border-b border-slate-100">
                         <th className="p-3">Nama Tamu</th>
@@ -1859,6 +1859,98 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
                                 }))
                               }
                               className="text-xs rounded-lg border-slate-200 py-1 border"
+                            >
+                              <option value="Hadir">Hadir</option>
+                              <option value="Belum Konfirmasi">Belum Konfirmasi</option>
+                              <option value="Ragu">Ragu-ragu</option>
+                              <option value="Tidak Hadir">Tidak Hadir</option>
+                            </select>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  <table className="sm:hidden w-full text-left border-collapse text-xs">
+                    <thead>
+                      <tr className="bg-slate-50 text-slate-500 uppercase text-[10px] tracking-wider font-semibold border-b border-slate-100">
+                        <th className="p-3">Tamu</th>
+                        <th className="p-3 text-right">Status &amp; RSVP</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 text-slate-700">
+                      {filteredGuests.map((g) => (
+                        <tr
+                          key={g.id}
+                          onClick={() => {
+                            setGuestForm({
+                              id: g.id,
+                              name: g.name,
+                              side: g.side,
+                              category: g.category,
+                              pax: g.pax,
+                              isVip: g.isVip,
+                            });
+                            setShowGuestModal(true);
+                          }}
+                          className="hover:bg-rose-50 cursor-pointer"
+                        >
+                          <td className="p-3">
+                            <p className="font-semibold text-slate-800">
+                              {g.name}
+                              {g.isVip && (
+                                <span className="ml-1 bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded text-[9px] font-bold">
+                                  VIP
+                                </span>
+                              )}
+                            </p>
+                            <p className="text-[11px] mt-0.5">
+                              <span
+                                className={
+                                  g.side === "CPP"
+                                    ? "text-rose-600 font-bold"
+                                    : "text-blue-600 font-bold"
+                                }
+                              >
+                                {g.side}
+                              </span>
+                              <span className="text-slate-400"> • </span>
+                              <span className="text-slate-500">{g.category}</span>
+                              <span className="text-slate-400"> • </span>
+                              <span className="font-bold text-slate-600">{g.pax} Pax</span>
+                            </p>
+                          </td>
+                          <td
+                            className="p-3 text-right align-top space-y-1.5"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <button
+                              onClick={() =>
+                                update((s) => ({
+                                  ...s,
+                                  guests: s.guests.map((x) =>
+                                    x.id === g.id ? { ...x, sent: !x.sent } : x
+                                  ),
+                                }))
+                              }
+                              className={`px-2 py-0.5 rounded-md text-[10px] font-bold ${
+                                g.sent
+                                  ? "bg-emerald-100 text-emerald-700"
+                                  : "bg-slate-100 text-slate-500"
+                              }`}
+                            >
+                              {g.sent ? "Terkirim" : "Belum"}
+                            </button>
+                            <select
+                              value={g.status}
+                              onChange={(e) =>
+                                update((s) => ({
+                                  ...s,
+                                  guests: s.guests.map((x) =>
+                                    x.id === g.id ? { ...x, status: e.target.value } : x
+                                  ),
+                                }))
+                              }
+                              className="block ml-auto text-[11px] rounded-lg border-slate-200 py-1 px-2 border max-w-[130px]"
                             >
                               <option value="Hadir">Hadir</option>
                               <option value="Belum Konfirmasi">Belum Konfirmasi</option>
