@@ -15,6 +15,7 @@ import { isKuaStep } from "@/lib/types";
 import { formatDate, formatRupiah, getVendorBadgeClass, newId } from "@/lib/utils";
 import { logoutAction, resetWeddingAction, saveWeddingAction } from "@/actions/auth";
 import { BrandCredit } from "@/components/BrandCredit";
+import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 
 const TABS: { id: TabId; name: string; icon: string }[] = [
   { id: "dashboard", name: "Dashboard Overview", icon: "fa-solid fa-chart-pie" },
@@ -295,6 +296,18 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
   const goalPct = goal > 0 ? Math.round((totalSavings / goal) * 100) : 0;
   const goalBarPct = Math.min(100, goalPct);
   const goalSurplus = goal > 0 && totalSavings >= goal;
+  const hasBudgetData = totalSavings > 0 || totalExpenses > 0;
+  const budgetPie = [
+    { name: "Total Realisasi Pengeluaran", value: Math.max(totalExpenses, 0) },
+    { name: "Saldo Kas", value: Math.max(savingsBalance, 0) },
+  ];
+  const realisasiPct =
+    totalSavings > 0
+      ? Math.round((Math.min(totalExpenses, totalSavings) / totalSavings) * 100)
+      : totalExpenses > 0
+        ? 100
+        : 0;
+  const saldoPct = Math.max(0, 100 - realisasiPct);
   const pendingChecklist = state.checklist.filter((c) => !c.done);
   const overallProgress = Math.round(
     (state.checklist.filter((c) => c.done).length / (state.checklist.length || 1)) * 100
@@ -900,38 +913,88 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
                     <i className="fa-solid fa-plus mr-1" /> Tambah Pos Pengeluaran
                   </button>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
-                  <div className="bg-blue-50/50 p-4 rounded-xl border border-blue-100">
-                    <span className="text-xs text-blue-600 font-medium">
-                      Budget Tersedia
-                    </span>
-                    <p className="text-xl font-bold text-blue-700 mt-1">
-                      {formatRupiah(totalSavings)}
-                    </p>
-                    <p className="text-[10px] text-blue-400">
-                      Otomatis dari {state.savings.length} setoran tabungan
-                    </p>
+                {hasBudgetData ? (
+                  <div className="flex flex-col sm:flex-row items-center gap-6 pt-2">
+                    <div className="relative w-full sm:w-[300px] shrink-0 h-[240px] sm:h-[300px]">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={budgetPie}
+                            dataKey="value"
+                            nameKey="name"
+                            innerRadius={70}
+                            outerRadius={115}
+                            paddingAngle={3}
+                            stroke="none"
+                          >
+                            <Cell fill="#f43f5e" />
+                            <Cell fill="#10b981" />
+                          </Pie>
+                          <Tooltip />
+                        </PieChart>
+                      </ResponsiveContainer>
+                      <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                        <span className="text-[10px] text-blue-500 font-semibold">
+                          Budget Tersedia
+                        </span>
+                        <span className="text-sm font-bold text-blue-700">
+                          {formatRupiah(totalSavings)}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex-1 w-full space-y-3">
+                      <div className="flex items-start gap-3">
+                        <span className="w-3 h-3 rounded-full bg-rose-500 mt-1.5 shrink-0" />
+                        <div className="min-w-0">
+                          <p className="text-sm font-bold text-slate-800">
+                            Total Realisasi Pengeluaran
+                          </p>
+                          <p className="text-lg font-bold text-rose-600">
+                            {formatRupiah(totalExpenses)}
+                          </p>
+                          <p className="text-[11px] text-slate-400">
+                            {realisasiPct}% dari budget tersedia
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-3">
+                        <span className="w-3 h-3 rounded-full bg-emerald-500 mt-1.5 shrink-0" />
+                        <div className="min-w-0">
+                          <p className="text-sm font-bold text-slate-800">Saldo Kas</p>
+                          <p
+                            className={`text-lg font-bold ${
+                              savingsBalance >= 0 ? "text-emerald-600" : "text-rose-600"
+                            }`}
+                          >
+                            {formatRupiah(savingsBalance)}
+                          </p>
+                          <p className="text-[11px] text-slate-400">
+                            {saldoPct}% sisa dari budget tersedia
+                          </p>
+                        </div>
+                      </div>
+                      <div className="border-t border-slate-100 pt-3 flex items-start gap-3">
+                        <span className="w-3 h-3 rounded-full bg-blue-500 mt-1.5 shrink-0" />
+                        <div className="min-w-0">
+                          <p className="text-sm font-bold text-slate-800">
+                            Budget Tersedia
+                          </p>
+                          <p className="text-lg font-bold text-blue-700">
+                            {formatRupiah(totalSavings)}
+                          </p>
+                          <p className="text-[11px] text-slate-400">
+                            Otomatis dari {state.savings.length} setoran tabungan
+                          </p>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                  <div className="bg-rose-50/50 p-4 rounded-xl border border-rose-100">
-                    <span className="text-xs text-rose-600 font-medium">
-                      Total Realisasi Pengeluaran
-                    </span>
-                    <p className="text-xl font-bold text-rose-700 mt-1">
-                      {formatRupiah(totalExpenses)}
-                    </p>
-                  </div>
-                  <div className="bg-emerald-50/50 p-4 rounded-xl border border-emerald-100">
-                    <span className="text-xs text-emerald-600 font-medium">
-                      Saldo Kas
-                    </span>
-                    <p className="text-xl font-bold text-emerald-700 mt-1">
-                      {formatRupiah(savingsBalance)}
-                    </p>
-                    <p className="text-[10px] text-emerald-400">
-                      Masuk − keluar
-                    </p>
-                  </div>
-                </div>
+                ) : (
+                  <p className="text-xs text-slate-400 text-center py-8">
+                    Belum ada data — tambah setoran tabungan &amp; pos pengeluaran untuk
+                    melihat perbandingan kas
+                  </p>
+                )}
               </div>
 
               <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
