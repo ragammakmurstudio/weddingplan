@@ -1468,7 +1468,7 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
                     </p>
                   ) : (
                     <div className="overflow-x-auto">
-                      <table className="w-full border-collapse min-w-[560px] text-xs sm:text-sm">
+                      <table className="hidden sm:table w-full border-collapse min-w-[560px] text-xs sm:text-sm">
                         <thead>
                           <tr>
                             <th className="bg-slate-100 text-slate-600 text-left px-4 py-2.5 font-bold rounded-tl-xl">
@@ -1521,6 +1521,63 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
                               </td>
                               <td
                                 className="px-4 py-3 border-b border-slate-100"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <select
+                                  aria-label={`Status — ${v.name}`}
+                                  value={v.status}
+                                  onChange={(e) =>
+                                    update((s) => ({
+                                      ...s,
+                                      vendors: s.vendors.map((x) =>
+                                        x.id === v.id
+                                          ? { ...x, status: e.target.value }
+                                          : x
+                                      ),
+                                    }))
+                                  }
+                                  className={`${getVendorBadgeClass(
+                                    v.status
+                                  )} text-[10px] px-2 py-1 pr-6 rounded-full font-bold cursor-pointer focus:ring-2 focus:ring-rose-500`}
+                                >
+                                  <option>Survey / Pitching</option>
+                                  <option>Deal</option>
+                                  <option>Batal</option>
+                                </select>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                      <table className="sm:hidden w-full border-collapse text-xs">
+                        <thead>
+                          <tr>
+                            <th className="bg-slate-100 text-slate-600 text-left px-3 py-2.5 font-bold rounded-tl-xl">
+                              Vendor Kandidat
+                            </th>
+                            <th className="bg-slate-100 text-slate-600 text-right px-3 py-2.5 font-bold rounded-tr-xl">
+                              Status
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {candidateVendors.map((v, i) => (
+                            <tr
+                              key={v.id}
+                              onClick={() => editVendor(v)}
+                              className={`cursor-pointer hover:bg-rose-100/60 ${
+                                i % 2 === 0 ? "bg-rose-50/50" : "bg-white"
+                              }`}
+                            >
+                              <td className="px-3 py-3 border-b border-slate-100">
+                                <p className="font-semibold text-slate-800">{v.name}</p>
+                                <p className="text-slate-500 mt-0.5">{v.category}</p>
+                                <p className="font-bold text-slate-700 mt-0.5">
+                                  {formatRupiah(v.price)}
+                                </p>
+                              </td>
+                              <td
+                                className="px-3 py-3 border-b border-slate-100 text-right align-top"
                                 onClick={(e) => e.stopPropagation()}
                               >
                                 <select
