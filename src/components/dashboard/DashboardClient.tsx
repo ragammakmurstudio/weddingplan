@@ -163,6 +163,7 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
     note: "",
   });
   const [guestForm, setGuestForm] = useState({
+    id: "",
     name: "",
     side: "CPP",
     category: "Sahabat / Teman",
@@ -949,12 +950,18 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
                         <th className="p-3">Estimasi (Rp)</th>
                         <th className="p-3">Realisasi (Rp)</th>
                         <th className="p-3">Status</th>
-                        <th className="p-3 text-right">Aksi</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 text-slate-700">
                       {state.budgetList.map((item) => (
-                        <tr key={item.id} className="hover:bg-slate-50">
+                        <tr
+                          key={item.id}
+                          onClick={() => {
+                            setBudgetForm(item);
+                            setShowBudgetModal(true);
+                          }}
+                          className="hover:bg-rose-50 cursor-pointer"
+                        >
                           <td className="p-3 font-semibold text-rose-600">{item.category}</td>
                           <td className="p-3 font-medium">{item.item}</td>
                           <td className="p-3">{formatRupiah(item.estimated)}</td>
@@ -971,28 +978,6 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
                             >
                               {item.status}
                             </span>
-                          </td>
-                          <td className="p-3 text-right space-x-2">
-                            <button
-                              onClick={() => {
-                                setBudgetForm(item);
-                                setShowBudgetModal(true);
-                              }}
-                              className="text-slate-400 hover:text-rose-600"
-                            >
-                              <i className="fa-solid fa-pen" />
-                            </button>
-                            <button
-                              onClick={() =>
-                                update((s) => ({
-                                  ...s,
-                                  budgetList: s.budgetList.filter((b) => b.id !== item.id),
-                                }))
-                              }
-                              className="text-slate-400 hover:text-red-600"
-                            >
-                              <i className="fa-solid fa-trash" />
-                            </button>
                           </td>
                         </tr>
                       ))}
@@ -1226,41 +1211,23 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
                     {state.maharItems.map((m) => (
                       <div
                         key={m.id}
-                        className="bg-white p-3 rounded-xl border border-amber-100 flex justify-between items-center text-xs"
+                        onClick={() => {
+                          setSeserahanForm({ ...m, section: "mahar", link: m.link ?? "" });
+                          setShowSeserahanModal(true);
+                        }}
+                        className="bg-white p-3 rounded-xl border border-amber-100 flex justify-between items-center text-xs cursor-pointer hover:border-amber-300 transition"
                       >
                         <div>
                           <p className="font-bold text-slate-800">{m.title}</p>
                           <p className="text-slate-500">{formatRupiah(m.cost)}</p>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <span
-                            className={`px-2 py-1 rounded-lg text-[10px] font-bold ${
-                              m.ready ? "text-emerald-600 bg-emerald-50" : "text-slate-400 bg-slate-50"
-                            }`}
-                          >
-                            {m.ready ? "Siap" : "Belum"}
-                          </span>
-                          <button
-                            onClick={() => {
-                              setSeserahanForm({ ...m, section: "mahar", link: m.link ?? "" });
-                              setShowSeserahanModal(true);
-                            }}
-                            className="text-slate-400 hover:text-blue-600 ml-1"
-                          >
-                            <i className="fa-solid fa-pen" />
-                          </button>
-                          <button
-                            onClick={() =>
-                              update((s) => ({
-                                ...s,
-                                maharItems: s.maharItems.filter((x) => x.id !== m.id),
-                              }))
-                            }
-                            className="text-slate-400 hover:text-red-600 ml-1"
-                          >
-                            <i className="fa-solid fa-trash" />
-                          </button>
-                        </div>
+                        <span
+                          className={`px-2 py-1 rounded-lg text-[10px] font-bold ${
+                            m.ready ? "text-emerald-600 bg-emerald-50" : "text-slate-400 bg-slate-50"
+                          }`}
+                        >
+                          {m.ready ? "Siap" : "Belum"}
+                        </span>
                       </div>
                     ))}
                   </div>
@@ -1299,12 +1266,17 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
                         {state[key].map((item) => (
                           <div
                             key={item.id}
-                            className="bg-slate-50 p-3 rounded-xl border border-slate-100 flex justify-between items-center text-xs"
+                            onClick={() => {
+                              setSeserahanForm({ ...item, section, link: item.link ?? "" });
+                              setShowSeserahanModal(true);
+                            }}
+                            className="bg-slate-50 p-3 rounded-xl border border-slate-100 flex justify-between items-center text-xs cursor-pointer hover:bg-slate-100 transition"
                           >
                             <div className="flex items-center space-x-2">
                               <input
                                 type="checkbox"
                                 checked={item.ready}
+                                onClick={(e) => e.stopPropagation()}
                                 onChange={() =>
                                   update((s) => ({
                                     ...s,
@@ -1325,31 +1297,9 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
                                 {item.title}
                               </span>
                             </div>
-                            <div className="flex items-center gap-2">
-                              <span className="text-slate-500 font-semibold">
-                                {formatRupiah(item.cost)}
-                              </span>
-                              <button
-                                onClick={() => {
-                                  setSeserahanForm({ ...item, section, link: item.link ?? "" });
-                                  setShowSeserahanModal(true);
-                                }}
-                                className="text-slate-400 hover:text-blue-600"
-                              >
-                                <i className="fa-solid fa-pen" />
-                              </button>
-                              <button
-                                onClick={() =>
-                                  update((s) => ({
-                                    ...s,
-                                    [key]: s[key].filter((x) => x.id !== item.id),
-                                  }))
-                                }
-                                className="text-slate-400 hover:text-red-600"
-                              >
-                                <i className="fa-solid fa-trash" />
-                              </button>
-                            </div>
+                            <span className="text-slate-500 font-semibold">
+                              {formatRupiah(item.cost)}
+                            </span>
                           </div>
                         ))}
                       </div>
@@ -1415,7 +1365,8 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
                               {deals.map((v) => (
                                 <div
                                   key={v.id}
-                                  className="bg-slate-50/80 rounded-xl border border-slate-100 p-3 space-y-2"
+                                  onClick={() => editVendor(v)}
+                                  className="bg-slate-50/80 rounded-xl border border-slate-100 p-3 space-y-2 cursor-pointer hover:border-rose-200 transition"
                                 >
                                   <div className="flex justify-between items-start gap-2">
                                     <h4 className="font-bold text-slate-800 text-sm leading-snug">
@@ -1435,12 +1386,13 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
                                   <p className="text-xs font-bold text-slate-800">
                                     {formatRupiah(v.price)}
                                   </p>
-                                  <div className="pt-2 border-t border-slate-200/60 flex items-center justify-between text-xs">
+                                  <div className="pt-2 border-t border-slate-200/60 text-xs">
                                     {v.contact ? (
                                       <a
                                         href={`https://wa.me/${v.contact}`}
                                         target="_blank"
                                         rel="noreferrer"
+                                        onClick={(e) => e.stopPropagation()}
                                         className="text-emerald-600 hover:text-emerald-700 font-bold"
                                       >
                                         <i className="fa-brands fa-whatsapp mr-1" /> Kontak
@@ -1448,22 +1400,6 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
                                     ) : (
                                       <span className="text-slate-300">—</span>
                                     )}
-                                    <div className="space-x-2">
-                                      <button
-                                        onClick={() => editVendor(v)}
-                                        className="text-slate-400 hover:text-blue-600"
-                                        aria-label="Edit vendor"
-                                      >
-                                        <i className="fa-solid fa-pen" />
-                                      </button>
-                                      <button
-                                        onClick={() => deleteVendor(v.id)}
-                                        className="text-slate-400 hover:text-red-600"
-                                        aria-label="Hapus vendor"
-                                      >
-                                        <i className="fa-solid fa-trash" />
-                                      </button>
-                                    </div>
                                   </div>
                                 </div>
                               ))}
@@ -1503,11 +1439,8 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
                             <th className="bg-slate-100 text-slate-600 text-right px-4 py-2.5 font-bold">
                               Harga
                             </th>
-                            <th className="bg-slate-100 text-slate-600 text-left px-4 py-2.5 font-bold">
+                            <th className="bg-slate-100 text-slate-600 text-left px-4 py-2.5 font-bold rounded-tr-xl">
                               Status
-                            </th>
-                            <th className="bg-slate-100 text-slate-600 text-right px-4 py-2.5 font-bold rounded-tr-xl">
-                              Aksi
                             </th>
                           </tr>
                         </thead>
@@ -1515,7 +1448,10 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
                           {candidateVendors.map((v, i) => (
                             <tr
                               key={v.id}
-                              className={i % 2 === 0 ? "bg-rose-50/50" : "bg-white"}
+                              onClick={() => editVendor(v)}
+                              className={`cursor-pointer hover:bg-rose-100/60 ${
+                                i % 2 === 0 ? "bg-rose-50/50" : "bg-white"
+                              }`}
                             >
                               <td className="px-4 py-3 border-b border-slate-100 font-semibold text-slate-800">
                                 {v.name}
@@ -1523,7 +1459,10 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
                               <td className="px-4 py-3 border-b border-slate-100 text-slate-600">
                                 {v.category}
                               </td>
-                              <td className="px-4 py-3 border-b border-slate-100 text-slate-700 text-right">
+                              <td
+                                className="px-4 py-3 border-b border-slate-100 text-slate-700 text-right"
+                                onClick={(e) => e.stopPropagation()}
+                              >
                                 <PriceCellInput
                                   value={v.price}
                                   label={`Harga — ${v.name}`}
@@ -1539,7 +1478,10 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
                                   }
                                 />
                               </td>
-                              <td className="px-4 py-3 border-b border-slate-100">
+                              <td
+                                className="px-4 py-3 border-b border-slate-100"
+                                onClick={(e) => e.stopPropagation()}
+                              >
                                 <select
                                   aria-label={`Status — ${v.name}`}
                                   value={v.status}
@@ -1561,24 +1503,6 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
                                   <option>Deal</option>
                                   <option>Batal</option>
                                 </select>
-                              </td>
-                              <td className="px-4 py-3 border-b border-slate-100 text-right whitespace-nowrap">
-                                <div className="inline-flex items-center gap-3">
-                                  <button
-                                    onClick={() => editVendor(v)}
-                                    className="text-slate-400 hover:text-blue-600"
-                                    aria-label="Edit vendor"
-                                  >
-                                    <i className="fa-solid fa-pen" />
-                                  </button>
-                                  <button
-                                    onClick={() => deleteVendor(v.id)}
-                                    className="text-slate-400 hover:text-red-600"
-                                    aria-label="Hapus vendor"
-                                  >
-                                    <i className="fa-solid fa-trash" />
-                                  </button>
-                                </div>
                               </td>
                             </tr>
                           ))}
@@ -1734,6 +1658,7 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
                   <button
                     onClick={() => {
                       setGuestForm({
+                        id: "",
                         name: "",
                         side: "CPP",
                         category: "Sahabat / Teman",
@@ -1822,12 +1747,25 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
                         <th className="p-3">Pax</th>
                         <th className="p-3">Status Undangan</th>
                         <th className="p-3">RSVP</th>
-                        <th className="p-3 text-right">Aksi</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 text-slate-700">
                       {filteredGuests.map((g) => (
-                        <tr key={g.id} className="hover:bg-slate-50">
+                        <tr
+                          key={g.id}
+                          onClick={() => {
+                            setGuestForm({
+                              id: g.id,
+                              name: g.name,
+                              side: g.side,
+                              category: g.category,
+                              pax: g.pax,
+                              isVip: g.isVip,
+                            });
+                            setShowGuestModal(true);
+                          }}
+                          className="hover:bg-rose-50 cursor-pointer"
+                        >
                           <td className="p-3 font-semibold text-slate-800">
                             {g.name}
                             {g.isVip && (
@@ -1849,7 +1787,7 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
                           </td>
                           <td className="p-3 text-slate-500">{g.category}</td>
                           <td className="p-3 font-bold">{g.pax} Pax</td>
-                          <td className="p-3">
+                          <td className="p-3" onClick={(e) => e.stopPropagation()}>
                             <button
                               onClick={() =>
                                 update((s) => ({
@@ -1868,7 +1806,7 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
                               {g.sent ? "Terkirim" : "Belum"}
                             </button>
                           </td>
-                          <td className="p-3">
+                          <td className="p-3" onClick={(e) => e.stopPropagation()}>
                             <select
                               value={g.status}
                               onChange={(e) =>
@@ -1886,19 +1824,6 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
                               <option value="Ragu">Ragu-ragu</option>
                               <option value="Tidak Hadir">Tidak Hadir</option>
                             </select>
-                          </td>
-                          <td className="p-3 text-right">
-                            <button
-                              onClick={() =>
-                                update((s) => ({
-                                  ...s,
-                                  guests: s.guests.filter((x) => x.id !== g.id),
-                                }))
-                              }
-                              className="text-slate-400 hover:text-red-600"
-                            >
-                              <i className="fa-solid fa-trash" />
-                            </button>
                           </td>
                         </tr>
                       ))}
@@ -2171,35 +2096,53 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
         title="Tambah / Edit Pos Budget"
         
         footer={
-          <>
-            <button
-              onClick={() => setShowBudgetModal(false)}
-              className="px-4 py-2 text-xs font-semibold text-slate-500 hover:bg-slate-100 rounded-xl"
-            >
-              Batal
-            </button>
-            <button
-              onClick={() => {
-                if (!budgetForm.item) return;
-                update((s) => {
-                  if (budgetForm.id) {
-                    return {
-                      ...s,
-                      budgetList: s.budgetList.map((b) =>
-                        b.id === budgetForm.id ? { ...budgetForm } : b
-                      ),
-                    };
-                  }
-                  return { ...s, budgetList: [...s.budgetList, { ...budgetForm, id: newId() }] };
-                }, false);
-                setShowBudgetModal(false);
-                showToast("Pos budget berhasil diperbarui!");
-              }}
-              className="px-4 py-2 text-xs font-semibold bg-rose-600 text-white rounded-xl hover:bg-rose-700"
-            >
-              Simpan
-            </button>
-          </>
+          <div className="w-full flex items-center justify-between">
+            {budgetForm.id && (
+              <button
+                onClick={() => {
+                  update((s) => ({
+                    ...s,
+                    budgetList: s.budgetList.filter((b) => b.id !== budgetForm.id),
+                  }));
+                  setShowBudgetModal(false);
+                  showToast("Pos budget berhasil dihapus!");
+                }}
+                aria-label="Hapus pos budget"
+                className="p-2 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition"
+              >
+                <i className="fa-solid fa-trash text-sm" />
+              </button>
+            )}
+            <div className="flex items-center space-x-2 ml-auto">
+              <button
+                onClick={() => setShowBudgetModal(false)}
+                className="px-4 py-2 text-xs font-semibold text-slate-500 hover:bg-slate-100 rounded-xl"
+              >
+                Batal
+              </button>
+              <button
+                onClick={() => {
+                  if (!budgetForm.item) return;
+                  update((s) => {
+                    if (budgetForm.id) {
+                      return {
+                        ...s,
+                        budgetList: s.budgetList.map((b) =>
+                          b.id === budgetForm.id ? { ...budgetForm } : b
+                        ),
+                      };
+                    }
+                    return { ...s, budgetList: [...s.budgetList, { ...budgetForm, id: newId() }] };
+                  }, false);
+                  setShowBudgetModal(false);
+                  showToast("Pos budget berhasil diperbarui!");
+                }}
+                className="px-4 py-2 text-xs font-semibold bg-rose-600 text-white rounded-xl hover:bg-rose-700"
+              >
+                Simpan
+              </button>
+            </div>
+          </div>
         }
       >
         <div className="space-y-3 text-xs">
@@ -2375,42 +2318,82 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
 
       <Modal
         open={showGuestModal}
-        title="Tambah Tamu Undangan"
-        
+        title={guestForm.id ? "Edit Tamu Undangan" : "Tambah Tamu Undangan"}
         footer={
-          <>
-            <button
-              onClick={() => setShowGuestModal(false)}
-              className="px-4 py-2 text-xs font-semibold text-slate-500 hover:bg-slate-100 rounded-xl"
-            >
-              Batal
-            </button>
-            <button
-              onClick={() => {
-                if (!guestForm.name) return;
-                update(
-                  (s) => ({
+          <div className="w-full flex items-center justify-between">
+            {guestForm.id && (
+              <button
+                onClick={() => {
+                  update((s) => ({
                     ...s,
-                    guests: [
-                      ...s.guests,
-                      {
-                        ...guestForm,
-                        id: newId(),
-                        sent: false,
-                        status: "Belum Konfirmasi",
-                      },
-                    ],
-                  }),
-                  false
-                );
-                setShowGuestModal(false);
-                showToast("Tamu undangan ditambahkan!");
-              }}
-              className="px-4 py-2 text-xs font-semibold bg-rose-600 text-white rounded-xl hover:bg-rose-700"
-            >
-              Simpan Tamu
-            </button>
-          </>
+                    guests: s.guests.filter((x) => x.id !== guestForm.id),
+                  }));
+                  setShowGuestModal(false);
+                  showToast("Tamu berhasil dihapus!");
+                }}
+                aria-label="Hapus tamu"
+                className="p-2 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition"
+              >
+                <i className="fa-solid fa-trash text-sm" />
+              </button>
+            )}
+            <div className="flex items-center space-x-2 ml-auto">
+              <button
+                onClick={() => setShowGuestModal(false)}
+                className="px-4 py-2 text-xs font-semibold text-slate-500 hover:bg-slate-100 rounded-xl"
+              >
+                Batal
+              </button>
+              <button
+                onClick={() => {
+                  if (!guestForm.name) return;
+                  if (guestForm.id) {
+                    update(
+                      (s) => ({
+                        ...s,
+                        guests: s.guests.map((x) =>
+                          x.id === guestForm.id
+                            ? {
+                                ...x,
+                                name: guestForm.name,
+                                side: guestForm.side,
+                                category: guestForm.category,
+                                pax: guestForm.pax,
+                                isVip: guestForm.isVip,
+                              }
+                            : x
+                        ),
+                      }),
+                      false
+                    );
+                    setShowGuestModal(false);
+                    showToast("Tamu berhasil diperbarui!");
+                    return;
+                  }
+                  update(
+                    (s) => ({
+                      ...s,
+                      guests: [
+                        ...s.guests,
+                        {
+                          ...guestForm,
+                          id: newId(),
+                          sent: false,
+                          status: "Belum Konfirmasi",
+                        },
+                      ],
+                    }),
+                    false
+                  );
+                  setShowGuestModal(false);
+                  showToast("Tamu undangan ditambahkan!");
+                }}
+                className="px-4 py-2 text-xs font-semibold bg-rose-600 text-white rounded-xl hover:bg-rose-700"
+              >
+                {guestForm.id ? "Simpan" : "Simpan Tamu"}
+              </button>
+            </div>
+          </div>
         }
       >
         <div className="space-y-3 text-xs">
@@ -2476,33 +2459,48 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
         title={`${vendorForm.id ? "Edit" : "Tambah"} Vendor / Venue`}
         
         footer={
-          <>
-            <button
-              onClick={() => setShowVendorModal(false)}
-              className="px-4 py-2 text-xs font-semibold text-slate-500 hover:bg-slate-100 rounded-xl"
-            >
-              Batal
-            </button>
-            <button
-              onClick={() => {
-                if (!vendorForm.name) return;
-                update((s) => {
-                  if (vendorForm.id) {
-                    return {
-                      ...s,
-                      vendors: s.vendors.map((v) => (v.id === vendorForm.id ? { ...vendorForm } : v)),
-                    };
-                  }
-                  return { ...s, vendors: [...s.vendors, { ...vendorForm, id: newId() }] };
-                }, false);
-                setShowVendorModal(false);
-                showToast("Vendor berhasil disimpan!");
-              }}
-              className="px-4 py-2 text-xs font-semibold bg-rose-600 text-white rounded-xl hover:bg-rose-700"
-            >
-              Simpan Vendor
-            </button>
-          </>
+          <div className="w-full flex items-center justify-between">
+            {vendorForm.id && (
+              <button
+                onClick={() => {
+                  deleteVendor(vendorForm.id);
+                  setShowVendorModal(false);
+                  showToast("Vendor berhasil dihapus!");
+                }}
+                aria-label="Hapus vendor"
+                className="p-2 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition"
+              >
+                <i className="fa-solid fa-trash text-sm" />
+              </button>
+            )}
+            <div className="flex items-center space-x-2 ml-auto">
+              <button
+                onClick={() => setShowVendorModal(false)}
+                className="px-4 py-2 text-xs font-semibold text-slate-500 hover:bg-slate-100 rounded-xl"
+              >
+                Batal
+              </button>
+              <button
+                onClick={() => {
+                  if (!vendorForm.name) return;
+                  update((s) => {
+                    if (vendorForm.id) {
+                      return {
+                        ...s,
+                        vendors: s.vendors.map((v) => (v.id === vendorForm.id ? { ...vendorForm } : v)),
+                      };
+                    }
+                    return { ...s, vendors: [...s.vendors, { ...vendorForm, id: newId() }] };
+                  }, false);
+                  setShowVendorModal(false);
+                  showToast("Vendor berhasil disimpan!");
+                }}
+                className="px-4 py-2 text-xs font-semibold bg-rose-600 text-white rounded-xl hover:bg-rose-700"
+              >
+                Simpan Vendor
+              </button>
+            </div>
+          </div>
         }
       >
         <div className="space-y-3 text-xs">
@@ -2651,48 +2649,75 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
         }`}
         
         footer={
-          <>
-            <button
-              onClick={() => setShowSeserahanModal(false)}
-              className="px-4 py-2 text-xs font-semibold text-slate-500 hover:bg-slate-100 rounded-xl"
-            >
-              Batal
-            </button>
-            <button
-              onClick={() => {
-                if (!seserahanForm.title) return;
-                const section = seserahanForm.section;
-                const key =
-                  section === "mahar"
-                    ? "maharItems"
-                    : section === "cppToCpw"
-                      ? "seserahanCppToCpw"
-                      : "seserahanCpwToCpp";
-                update((s) => {
-                  const list = s[key] as SeserahanItem[];
-                  const payload: SeserahanItem = {
-                    id: seserahanForm.id || newId(),
-                    title: seserahanForm.title,
-                    cost: seserahanForm.cost,
-                    ready: seserahanForm.ready,
-                    link: seserahanForm.link || "",
-                  };
-                  if (seserahanForm.id) {
-                    return {
-                      ...s,
-                      [key]: list.map((x) => (x.id === seserahanForm.id ? payload : x)),
+          <div className="w-full flex items-center justify-between">
+            {seserahanForm.id && (
+              <button
+                onClick={() => {
+                  const section = seserahanForm.section;
+                  const key =
+                    section === "mahar"
+                      ? "maharItems"
+                      : section === "cppToCpw"
+                        ? "seserahanCppToCpw"
+                        : "seserahanCpwToCpp";
+                  update((s) => ({
+                    ...s,
+                    [key]: (s[key] as SeserahanItem[]).filter(
+                      (x) => x.id !== seserahanForm.id
+                    ),
+                  }));
+                  setShowSeserahanModal(false);
+                  showToast("Item berhasil dihapus!");
+                }}
+                aria-label="Hapus item"
+                className="p-2 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition"
+              >
+                <i className="fa-solid fa-trash text-sm" />
+              </button>
+            )}
+            <div className="flex items-center space-x-2 ml-auto">
+              <button
+                onClick={() => setShowSeserahanModal(false)}
+                className="px-4 py-2 text-xs font-semibold text-slate-500 hover:bg-slate-100 rounded-xl"
+              >
+                Batal
+              </button>
+              <button
+                onClick={() => {
+                  if (!seserahanForm.title) return;
+                  const section = seserahanForm.section;
+                  const key =
+                    section === "mahar"
+                      ? "maharItems"
+                      : section === "cppToCpw"
+                        ? "seserahanCppToCpw"
+                        : "seserahanCpwToCpp";
+                  update((s) => {
+                    const list = s[key] as SeserahanItem[];
+                    const payload: SeserahanItem = {
+                      id: seserahanForm.id || newId(),
+                      title: seserahanForm.title,
+                      cost: seserahanForm.cost,
+                      ready: seserahanForm.ready,
+                      link: seserahanForm.link || "",
                     };
-                  }
-                  return { ...s, [key]: [...list, payload] };
-                }, false);
-                setShowSeserahanModal(false);
-                showToast("Item berhasil disimpan!");
-              }}
-              className="px-4 py-2 text-xs font-semibold bg-rose-600 text-white rounded-xl hover:bg-rose-700"
-            >
-              Simpan
-            </button>
-          </>
+                    if (seserahanForm.id) {
+                      return {
+                        ...s,
+                        [key]: list.map((x) => (x.id === seserahanForm.id ? payload : x)),
+                      };
+                    }
+                    return { ...s, [key]: [...list, payload] };
+                  }, false);
+                  setShowSeserahanModal(false);
+                  showToast("Item berhasil disimpan!");
+                }}
+                className="px-4 py-2 text-xs font-semibold bg-rose-600 text-white rounded-xl hover:bg-rose-700"
+              >
+                Simpan
+              </button>
+            </div>
+          </div>
         }
       >
         <div className="space-y-3 text-xs">
