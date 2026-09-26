@@ -941,11 +941,6 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
                           {formatRupiah(totalSavings)}
                         </span>
                       </div>
-                      <div className="absolute inset-0 flex sm:hidden items-center justify-center pointer-events-none">
-                        <span className="text-xs font-bold text-rose-600">
-                          {realisasiPct}%
-                        </span>
-                      </div>
                     </div>
                     <div className="flex-1 w-full space-y-2 sm:space-y-3">
                       <div className="flex items-start gap-2 sm:gap-3">
