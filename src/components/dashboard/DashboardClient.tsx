@@ -922,8 +922,8 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
                             data={budgetPie}
                             dataKey="value"
                             nameKey="name"
-                            innerRadius={70}
-                            outerRadius={115}
+                            innerRadius="55%"
+                            outerRadius="88%"
                             paddingAngle={3}
                             stroke="none"
                           >
