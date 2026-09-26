@@ -933,12 +933,17 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
                           <Tooltip />
                         </PieChart>
                       </ResponsiveContainer>
-                      <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                        <span className="text-[8px] sm:text-[10px] text-blue-500 font-semibold">
+                      <div className="absolute inset-0 hidden sm:flex flex-col items-center justify-center pointer-events-none">
+                        <span className="text-[10px] text-blue-500 font-semibold">
                           Budget Tersedia
                         </span>
-                        <span className="text-[10px] sm:text-sm font-bold text-blue-700">
+                        <span className="text-sm font-bold text-blue-700">
                           {formatRupiah(totalSavings)}
+                        </span>
+                      </div>
+                      <div className="absolute inset-0 flex sm:hidden items-center justify-center pointer-events-none">
+                        <span className="text-xs font-bold text-rose-600">
+                          {realisasiPct}%
                         </span>
                       </div>
                     </div>
