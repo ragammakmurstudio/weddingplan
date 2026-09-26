@@ -1099,60 +1099,33 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
                         <th className="p-3">Dari</th>
                         <th className="p-3 text-right">Nominal</th>
                         <th className="p-3">Catatan</th>
-                        <th className="p-3 text-right">Aksi</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 text-slate-700">
                       {sortedSavings.map((x) => (
-                        <tr key={x.id} className="hover:bg-slate-50">
-                          <td className="p-3 whitespace-nowrap">{formatDate(x.date)}</td>
+                        <tr
+                          key={x.id}
+                          onClick={() => {
+                            setSavingsForm(x);
+                            setShowSavingsModal(true);
+                          }}
+                          className="hover:bg-rose-50 cursor-pointer"
+                        >
+                          <td className="p-3 whitespace-nowrap">
+                            {formatDate(x.date)}
+                          </td>
                           <td className="p-3 font-semibold text-slate-800">
                             {x.source || "—"}
                           </td>
-                          <td className="p-3 text-right">
-                            <PriceCellInput
-                              value={x.amount}
-                              label={`Nominal — ${x.source || x.date}`}
-                              onCommit={(n) =>
-                                update((s) => ({
-                                  ...s,
-                                  savings: s.savings.map((y) =>
-                                    y.id === x.id ? { ...y, amount: n } : y
-                                  ),
-                                }))
-                              }
-                            />
+                          <td className="p-3 text-right whitespace-nowrap">
+                            {formatRupiah(x.amount)}
                           </td>
                           <td className="p-3 text-slate-500">{x.note || "—"}</td>
-                          <td className="p-3 text-right space-x-2 whitespace-nowrap">
-                            <button
-                              onClick={() => {
-                                setSavingsForm(x);
-                                setShowSavingsModal(true);
-                              }}
-                              className="text-slate-400 hover:text-rose-600"
-                              aria-label="Edit setoran"
-                            >
-                              <i className="fa-solid fa-pen" />
-                            </button>
-                            <button
-                              onClick={() =>
-                                update((s) => ({
-                                  ...s,
-                                  savings: s.savings.filter((y) => y.id !== x.id),
-                                }))
-                              }
-                              className="text-slate-400 hover:text-red-600"
-                              aria-label="Hapus setoran"
-                            >
-                              <i className="fa-solid fa-trash" />
-                            </button>
-                          </td>
                         </tr>
                       ))}
                       {state.savings.length === 0 && (
                         <tr>
-                          <td colSpan={5} className="p-6 text-center text-slate-400 text-xs">
+                          <td colSpan={4} className="p-6 text-center text-slate-400 text-xs">
                             Belum ada setoran — klik &quot;Tambah Setoran&quot; untuk mulai catat uang masuk
                           </td>
                         </tr>
@@ -1164,12 +1137,18 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
                       <tr className="bg-slate-50 text-slate-500 uppercase text-[10px] tracking-wider font-semibold border-b border-slate-100">
                         <th className="p-3">Setoran</th>
                         <th className="p-3 text-right">Nominal</th>
-                        <th className="p-3 text-right">Aksi</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 text-slate-700">
                       {sortedSavings.map((x) => (
-                        <tr key={x.id} className="hover:bg-slate-50">
+                        <tr
+                          key={x.id}
+                          onClick={() => {
+                            setSavingsForm(x);
+                            setShowSavingsModal(true);
+                          }}
+                          className="hover:bg-rose-50 cursor-pointer"
+                        >
                           <td className="p-3">
                             <p className="text-slate-600 font-medium">
                               {formatDate(x.date)}
@@ -1183,50 +1162,14 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
                               </p>
                             )}
                           </td>
-                          <td className="p-3 text-right align-top">
-                            <PriceCellInput
-                              value={x.amount}
-                              label={`Nominal — ${x.source || x.date}`}
-                              onCommit={(n) =>
-                                update((s) => ({
-                                  ...s,
-                                  savings: s.savings.map((y) =>
-                                    y.id === x.id ? { ...y, amount: n } : y
-                                  ),
-                                }))
-                              }
-                              className="w-28 text-right bg-transparent border border-transparent hover:border-slate-200 focus:border-rose-300 focus:ring-1 focus:ring-rose-500 rounded-lg px-2 py-1 text-xs"
-                            />
-                          </td>
-                          <td className="p-3 text-right align-top space-x-2 whitespace-nowrap">
-                            <button
-                              onClick={() => {
-                                setSavingsForm(x);
-                                setShowSavingsModal(true);
-                              }}
-                              className="text-slate-400 hover:text-rose-600"
-                              aria-label="Edit setoran"
-                            >
-                              <i className="fa-solid fa-pen" />
-                            </button>
-                            <button
-                              onClick={() =>
-                                update((s) => ({
-                                  ...s,
-                                  savings: s.savings.filter((y) => y.id !== x.id),
-                                }))
-                              }
-                              className="text-slate-400 hover:text-red-600"
-                              aria-label="Hapus setoran"
-                            >
-                              <i className="fa-solid fa-trash" />
-                            </button>
+                          <td className="p-3 text-right align-top whitespace-nowrap">
+                            {formatRupiah(x.amount)}
                           </td>
                         </tr>
                       ))}
                       {state.savings.length === 0 && (
                         <tr>
-                          <td colSpan={3} className="p-6 text-center text-slate-400 text-xs">
+                          <td colSpan={2} className="p-6 text-center text-slate-400 text-xs">
                             Belum ada setoran — klik &quot;Tambah Setoran&quot; untuk mulai catat uang masuk
                           </td>
                         </tr>
@@ -2325,41 +2268,61 @@ export function DashboardClient({ initial, userEmail, userName }: Props) {
         open={showSavingsModal}
         title={savingsForm.id ? "Edit Setoran Tabungan" : "Tambah Setoran Tabungan"}
         footer={
-          <>
-            <button
-              onClick={() => setShowSavingsModal(false)}
-              className="px-4 py-2 text-xs font-semibold text-slate-500 hover:bg-slate-100 rounded-xl"
-            >
-              Batal
-            </button>
-            <button
-              onClick={() => {
-                if (!savingsForm.amount || !savingsForm.date) return;
-                update((s) => {
-                  if (savingsForm.id) {
+          <div className="w-full space-y-3">
+            <div className="flex justify-end space-x-2">
+              <button
+                onClick={() => setShowSavingsModal(false)}
+                className="px-4 py-2 text-xs font-semibold text-slate-500 hover:bg-slate-100 rounded-xl"
+              >
+                Batal
+              </button>
+              <button
+                onClick={() => {
+                  if (!savingsForm.amount || !savingsForm.date) return;
+                  update((s) => {
+                    if (savingsForm.id) {
+                      return {
+                        ...s,
+                        savings: s.savings.map((x) =>
+                          x.id === savingsForm.id ? { ...savingsForm } : x
+                        ),
+                      };
+                    }
                     return {
                       ...s,
-                      savings: s.savings.map((x) =>
-                        x.id === savingsForm.id ? { ...savingsForm } : x
-                      ),
+                      savings: [...s.savings, { ...savingsForm, id: newId() }],
                     };
-                  }
-                  return {
-                    ...s,
-                    savings: [...s.savings, { ...savingsForm, id: newId() }],
-                  };
-                }, false);
-                const msg = savingsForm.id
-                  ? "Setoran berhasil diperbarui!"
-                  : "Setoran berhasil ditambahkan!";
-                setShowSavingsModal(false);
-                showToast(msg);
-              }}
-              className="px-4 py-2 text-xs font-semibold bg-rose-600 text-white rounded-xl hover:bg-rose-700"
-            >
-              Simpan
-            </button>
-          </>
+                  }, false);
+                  const msg = savingsForm.id
+                    ? "Setoran berhasil diperbarui!"
+                    : "Setoran berhasil ditambahkan!";
+                  setShowSavingsModal(false);
+                  showToast(msg);
+                }}
+                className="px-4 py-2 text-xs font-semibold bg-rose-600 text-white rounded-xl hover:bg-rose-700"
+              >
+                Simpan
+              </button>
+            </div>
+            {savingsForm.id && (
+              <div className="border-t border-slate-100 pt-3">
+                <button
+                  onClick={() => {
+                    update((s) => ({
+                      ...s,
+                      savings: s.savings.filter((x) => x.id !== savingsForm.id),
+                    }));
+                    setShowSavingsModal(false);
+                    showToast("Setoran berhasil dihapus!");
+                  }}
+                  className="w-full flex items-center justify-center space-x-2 py-2.5 text-xs font-semibold text-red-600 hover:bg-red-50 border border-red-100 rounded-xl transition"
+                >
+                  <i className="fa-solid fa-trash" />
+                  <span>Hapus Setoran</span>
+                </button>
+              </div>
+            )}
+          </div>
         }
       >
         <div className="space-y-3 text-xs">
